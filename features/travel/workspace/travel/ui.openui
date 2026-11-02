@@ -1,9 +1,0 @@
-root = Stack([header, metrics, board, table])
-header = DomainHeader("Travel", "Upcoming trips, itineraries, and booking statuses.")
-metrics = Grid([
-  MetricCard("Planning", @Query("planning_trips"), "Draft itineraries"),
-  MetricCard("Booked", @Query("booked_trips"), "Confirmed trips"),
-  MetricCard("Completed", @Query("completed_trips"), "Past trips")
-], 3)
-board = RecordKanban("status", ["planning", "booked", "in-progress", "completed"])
-table = RecordTable(["title", "destination", "start_date", "end_date", "status"])

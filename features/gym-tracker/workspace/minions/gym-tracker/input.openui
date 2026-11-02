@@ -1,0 +1,12 @@
+Card(children: [
+  CardHeader(title: "Record Gym Tracker Entry", subtitle: "Validated by input.schema.json -> saved via input.py -> analyzed by main.py"),
+  Form(name: "minionInput", fields: [
+    FormControl(label: "Exercise / Session", input: Input(name: "item", placeholder: "e.g., Barbell Back Squat 3x5", rules: {required: true})),
+    FormControl(label: "Focus / Split", input: Select(name: "category", placeholder: "Select focus...", items: [SelectItem(value: "strength", label: "Strength"), SelectItem(value: "hypertrophy", label: "Hypertrophy"), SelectItem(value: "conditioning", label: "Conditioning"), SelectItem(value: "mobility", label: "Mobility")])),
+    FormControl(label: "Top Load / Metric", input: Input(name: "value", type: "number", placeholder: "Weight or primary session metric")),
+    FormControl(label: "Status", input: Select(name: "status", placeholder: "Select status...", items: [SelectItem(value: "completed", label: "Completed"), SelectItem(value: "active", label: "Active"), SelectItem(value: "planned", label: "Planned")])),
+    FormControl(label: "Notes", input: Input(name: "notes", placeholder: "RPE, tempo, or recovery notes"))
+  ], buttons: Buttons(buttons: [
+    Button(label: "Submit Entry", variant: "primary")
+  ]))
+])

@@ -1,7 +1,7 @@
 schema: 1
 id: personal-os
 name: Personal Operating System (Personal OS)
-version: 0.1.0
+version: 0.2.0
 description: Complete Personal OS workspace profile with tasks, goals, calendar, verifiable claims, daily briefings, and productivity skills.
 author: OpenLia maintainers
 license: MIT

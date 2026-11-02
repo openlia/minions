@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Validate all profiles, features, schemas, templates, and skills in openlia/templates."""
+"""Validate all profiles, features, schemas, templates, Minions, and skills in openlia/minions."""
 
 from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -18,6 +19,36 @@ FEATURES_DIR = ROOT / "features"
 SKILLS_DIR = ROOT / "skills"
 PROFILES_DIR = ROOT / "profiles"
 CATALOG_PATH = ROOT / "catalog.json"
+
+MINION_PACKAGE_FILE = "minion.package.json"
+MAX_MINION_FILE_BYTES = 10 * 1024 * 1024
+MINION_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+RESERVED_MINION_PARTS = {
+    "config.json",
+    "data",
+    "state",
+    "cache",
+    "caches",
+    "logs",
+    "uploads",
+    "tmp",
+    "temp",
+    "node_modules",
+    "__pycache__",
+    "venv",
+    "env",
+    "dist",
+    "build",
+    "coverage",
+}
+CREDENTIAL_CONTENT_RE = re.compile(
+    r"-----BEGIN [A-Z ]*PRIVATE KEY-----|"
+    r"\b(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9_]{36,}\b|"
+    r"\bglpat-[A-Za-z0-9\-=_]{20,}\b|"
+    r"\bsk-[A-Za-z0-9]{20,}\b|"
+    r"\bAKIA[0-9A-Z]{16}\b",
+    re.IGNORECASE,
+)
 
 
 class UniqueKeyLoader(yaml.SafeLoader):
@@ -121,11 +152,175 @@ def build_catalog() -> dict:
 
     return {
         "schema": 1,
-        "repository": "https://github.com/openlia/templates.git",
+        "repository": "https://github.com/openlia/minions.git",
         "profiles": profiles,
         "features": features,
         "skills": skills,
     }
+
+
+def portable_minion_file(rel: str) -> bool:
+    if not rel or re.search(r"[\\:\x00]", rel) or rel.startswith("/"):
+        return False
+    for part in rel.split("/"):
+        lower = part.lower()
+        if (
+            not part
+            or part in (".", "..")
+            or part.startswith(".")
+            or lower in RESERVED_MINION_PARTS
+            or lower.endswith((".pyc", ".log", ".pem", ".key"))
+            or any(token in lower for token in ("credential", "secret", "token", "id_rsa", "id_ed25519"))
+        ):
+            return False
+    return True
+
+
+def _has_external_schema_ref(node: object) -> bool:
+    if isinstance(node, dict):
+        ref = node.get("$ref")
+        if isinstance(ref, str) and not ref.startswith("#"):
+            return True
+        return any(_has_external_schema_ref(value) for value in node.values())
+    if isinstance(node, list):
+        return any(_has_external_schema_ref(item) for item in node)
+    return False
+
+
+def validate_minion_config_schema(schema: object) -> None:
+    if not isinstance(schema, dict) or schema.get("type") != "object":
+        raise ValueError("config.schema.json must declare an object schema")
+    if "$schema" in schema and schema["$schema"] != "https://json-schema.org/draft/2020-12/schema":
+        raise ValueError("config.schema.json must use Draft 2020-12")
+    required = schema.get("required")
+    if not isinstance(required, list) or "trigger" not in required:
+        raise ValueError("config.schema.json must require trigger")
+    if _has_external_schema_ref(schema):
+        raise ValueError("external schema references are not permitted in config.schema.json")
+    jsonschema.Draft202012Validator.check_schema(schema)
+
+
+def validate_minion_package_dir(minion_dir: Path, minion_id: str) -> list[str]:
+    errors: list[str] = []
+    label = f"minions/{minion_id}"
+    pkg_path = minion_dir / MINION_PACKAGE_FILE
+    if pkg_path.is_symlink() or not pkg_path.is_file():
+        return [f"{label}: missing reviewed {MINION_PACKAGE_FILE}"]
+    try:
+        raw = json.loads(pkg_path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        return [f"{label}/{MINION_PACKAGE_FILE}: {exc}"]
+    if (
+        not isinstance(raw, dict)
+        or set(raw.keys()) != {"schema", "files"}
+        or type(raw.get("schema")) is not int
+        or raw["schema"] != 1
+        or not isinstance(raw.get("files"), list)
+        or not raw["files"]
+    ):
+        return [f"{label}/{MINION_PACKAGE_FILE}: expected schema: 1 and explicit files list"]
+
+    seen = {MINION_PACKAGE_FILE}
+    seen_fold = {MINION_PACKAGE_FILE.lower()}
+    for rel in raw["files"]:
+        if not isinstance(rel, str) or not portable_minion_file(rel) or rel.lower() in seen_fold:
+            errors.append(f"{label}: unsafe or duplicate Minion distribution file {rel!r}")
+            continue
+        target = minion_dir / rel
+        for parent in [target, *target.parents]:
+            if parent.is_symlink():
+                errors.append(f"{label}: symlink in Minion path {rel}")
+                break
+            if parent == minion_dir:
+                break
+        else:
+            continue
+        if target.is_symlink():
+            continue
+        if not target.is_file() or target.stat().st_size > MAX_MINION_FILE_BYTES:
+            errors.append(f"{label}: missing or oversized Minion package file {rel}")
+            continue
+        try:
+            text = target.read_text(encoding="utf-8")
+        except Exception as exc:
+            errors.append(f"{label}/{rel}: {exc}")
+            continue
+        if CREDENTIAL_CONTENT_RE.search(text):
+            errors.append(f"{label}/{rel}: credential pattern detected")
+            continue
+        seen.add(rel)
+        seen_fold.add(rel.lower())
+
+    for req in ("README.md", "dashboard.openui", "input.openui", "input.schema.json", "config.schema.json"):
+        if req not in seen:
+            errors.append(f"{label}: Minion distribution missing required file {req}")
+    if (
+        ("main.py" in seen) == ("main.ts" in seen)
+        or ("input.py" in seen) == ("input.ts" in seen)
+        or ("main.py" in seen) != ("input.py" in seen)
+    ):
+        errors.append(f"{label}: Minion distribution requires exactly one runtime and its input entrypoint")
+    if not any(path.startswith("tests/") for path in seen):
+        errors.append(f"{label}: Minion distribution must include tests/")
+
+    config_schema_path = minion_dir / "config.schema.json"
+    if "config.schema.json" in seen and config_schema_path.is_file() and not config_schema_path.is_symlink():
+        try:
+            validate_minion_config_schema(json.loads(config_schema_path.read_text(encoding="utf-8")))
+        except Exception as exc:
+            errors.append(f"{label}/config.schema.json: {exc}")
+
+    for path in sorted(minion_dir.rglob("*")):
+        rel = path.relative_to(minion_dir).as_posix()
+        if path.is_symlink() or not portable_minion_file(rel) or (not path.is_dir() and rel not in seen):
+            errors.append(f"{label}: Minion package contains undeclared or local-only path {rel}")
+
+    return errors
+
+
+def validate_feature_minions(fdir: Path, manifest: dict, errors: list[str]) -> None:
+    prefix = f"features/{fdir.name}"
+    selected: set[str] = set()
+    for domain in manifest.get("domains", []) or []:
+        if not isinstance(domain, dict):
+            continue
+        rel = str(domain.get("path", ""))
+        parts = rel.split("/")
+        if parts[0] != "minions":
+            continue
+        if len(parts) != 2 or not MINION_ID_RE.fullmatch(parts[1]):
+            errors.append(f"{prefix}: select an exact minions/<slug> domain, not {rel!r}")
+            continue
+        selected.add(parts[1])
+
+    minions_root = fdir / "workspace" / "minions"
+    if minions_root.is_symlink():
+        errors.append(f"{prefix}: symlinks are not permitted in Minion paths: workspace/minions")
+        return
+    if not minions_root.exists():
+        if selected:
+            errors.append(f"{prefix}: feature declares a missing Minion package: {', '.join(sorted(selected))}")
+        return
+    if not minions_root.is_dir():
+        errors.append(f"{prefix}: workspace/minions must be a directory")
+        return
+
+    for entry in sorted(minions_root.iterdir()):
+        minion_id = entry.name
+        if (
+            not entry.is_dir()
+            or entry.is_symlink()
+            or minion_id not in selected
+            or not MINION_ID_RE.fullmatch(minion_id)
+        ):
+            errors.append(f"{prefix}: feature must declare each Minion as an exact domain: minions/{minion_id}")
+            continue
+        for err in validate_minion_package_dir(entry, minion_id):
+            errors.append(f"{prefix}/{err}")
+        selected.discard(minion_id)
+
+    if selected:
+        errors.append(f"{prefix}: feature declares a missing Minion package: {', '.join(sorted(selected))}")
 
 
 def validate_all(run_self_tests: bool = True) -> list[str]:
@@ -167,6 +362,7 @@ def validate_all(run_self_tests: bool = True) -> list[str]:
                             )
                 except Exception as exc:
                     errors.append(f"{tpl_path.relative_to(ROOT)}: {exc}")
+        validate_feature_minions(fdir, manifest, errors)
 
     # 2. Validate profile runtime requirements before their features are installed.
     for manifest_path in sorted(PROFILES_DIR.glob("*/profile.yaml")):

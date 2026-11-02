@@ -1,7 +1,7 @@
 schema: 1
 id: decision-analysis
 name: Structured Decision Analysis
-version: 0.3.0
+version: 0.4.0
 description: Weighted decision scoring, multi-option trade-off matrices, sensitivity checks, and decision records.
 author: OpenLia maintainers
 license: MIT

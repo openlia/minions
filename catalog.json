@@ -1,11 +1,11 @@
 {
   "schema": 1,
-  "repository": "https://github.com/openlia/templates.git",
+  "repository": "https://github.com/openlia/minions.git",
   "profiles": [
     {
       "id": "personal-os",
       "name": "Personal Operating System (Personal OS)",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "description": "Complete Personal OS workspace profile with tasks, goals, calendar, verifiable claims, daily briefings, and productivity skills.",
       "path": "profiles/personal-os",
       "features": [
@@ -94,7 +94,7 @@
     {
       "id": "daily-briefing",
       "name": "Daily Briefing",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "description": "Dated morning briefing reports synthesizing calendar, tasks, goals, and inbox items.",
       "path": "features/daily-briefing",
       "domains": [
@@ -114,7 +114,7 @@
     {
       "id": "decision-analysis",
       "name": "Structured Decision Analysis",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "description": "Weighted decision scoring, multi-option trade-off matrices, sensitivity checks, and decision records.",
       "path": "features/decision-analysis",
       "domains": [
@@ -155,8 +155,8 @@
     {
       "id": "goals",
       "name": "Goals & Outcomes",
-      "version": "0.1.0",
-      "description": "High-level outcomes, rationale, milestones, and interactive goals Mini-Project.",
+      "version": "0.2.0",
+      "description": "Durable Markdown goal records with outcomes, rationale, milestones, and review cadences.",
       "path": "features/goals",
       "domains": [
         "goals"
@@ -169,6 +169,18 @@
         "features": [],
         "tools": []
       }
+    },
+    {
+      "id": "gym-tracker",
+      "name": "Gym & Workout Tracker",
+      "version": "0.1.0",
+      "description": "Programmable workout tracker Minion for logging sets, progressive overload, and weekly volume.",
+      "path": "features/gym-tracker",
+      "domains": [
+        "minions/gym-tracker"
+      ],
+      "skills": [],
+      "requires": {}
     },
     {
       "id": "ideas",
@@ -191,7 +203,7 @@
     {
       "id": "monitors",
       "name": "Monitors & Watch Conditions",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "description": "Conditions and signals to watch for change over time.",
       "path": "features/monitors",
       "domains": [
@@ -209,7 +221,7 @@
     {
       "id": "people",
       "name": "People & Relationship Context",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "description": "Relationship context, contact notes, and person records.",
       "path": "features/people",
       "domains": [
@@ -280,7 +292,7 @@
     {
       "id": "shopping",
       "name": "Shopping & Purchase Candidates",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "description": "Product research, price comparisons, and purchase candidates.",
       "path": "features/shopping",
       "domains": [
@@ -298,8 +310,8 @@
     {
       "id": "tasks",
       "name": "Tasks & Action Tracking",
-      "version": "0.1.0",
-      "description": "Concrete actions, priorities, due dates, and interactive task board Mini-Project.",
+      "version": "0.2.0",
+      "description": "Durable Markdown action records with priorities, due dates, and completion tracking.",
       "path": "features/tasks",
       "domains": [
         "tasks"
@@ -316,7 +328,7 @@
     {
       "id": "travel",
       "name": "Travel & Itineraries",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "description": "Trip planning, itineraries, booking checklists, and travel notes.",
       "path": "features/travel",
       "domains": [
@@ -345,7 +357,7 @@
     {
       "id": "daily-briefing",
       "name": "daily-briefing",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "description": "Collect workspace sources and prepare an evidence-based daily briefing.",
       "path": "skills/daily-briefing",
       "requires": {}
@@ -361,7 +373,7 @@
     {
       "id": "inbox-triage",
       "name": "inbox-triage",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "description": "Classify captured items into reviewable workspace destinations without applying consequential changes.",
       "path": "skills/inbox-triage",
       "requires": {}
@@ -369,7 +381,7 @@
     {
       "id": "weekly-review",
       "name": "weekly-review",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "description": "Review goals, tasks, decisions, health records, and finance open loops without acting.",
       "path": "skills/weekly-review",
       "requires": {}
@@ -385,7 +397,7 @@
     {
       "id": "workspace-organize",
       "name": "workspace-organize",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "description": "Audit workspace integrity, detect orphan or stale items, and propose clean-up actions.",
       "path": "skills/workspace-organize",
       "requires": {}

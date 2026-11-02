@@ -1,7 +1,7 @@
 schema: 1
 id: people
 name: People & Relationship Context
-version: 0.3.0
+version: 0.4.0
 description: Relationship context, contact notes, and person records.
 author: OpenLia maintainers
 license: MIT

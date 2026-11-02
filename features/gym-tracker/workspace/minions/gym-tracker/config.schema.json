@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Gym Tracker Configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "trigger"
+  ],
+  "properties": {
+    "trigger": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "on_new_entry": {
+          "type": "boolean",
+          "default": false
+        },
+        "cron": {
+          "type": "string"
+        }
+      },
+      "default": {
+        "on_new_entry": false
+      }
+    },
+    "weekly_target_sessions": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 14,
+      "default": 3,
+      "title": "Weekly Target Sessions"
+    },
+    "weight_unit": {
+      "type": "string",
+      "enum": [
+        "kg",
+        "lb"
+      ],
+      "default": "kg",
+      "title": "Weight Unit"
+    }
+  }
+}

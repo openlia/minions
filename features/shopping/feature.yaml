@@ -1,7 +1,7 @@
 schema: 1
 id: shopping
 name: Shopping & Purchase Candidates
-version: 0.3.0
+version: 0.4.0
 description: Product research, price comparisons, and purchase candidates.
 author: OpenLia maintainers
 license: MIT

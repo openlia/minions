@@ -14,10 +14,10 @@ installation may contain only starter data.
   `write_file` replacements or terminal workarounds. Removing optional
   frontmatter is an ordinary update; preserve the body and unrelated content.
 - **Create freely. Validate automatically. Fix when useful. Ignore intentionally.**
-  Folders, collections, templates, schemas, and Mini-Projects do not require
+  Folders, collections, templates, schemas, and inline views do not require
   registration in `workspace.yaml` or domain allowlists before creation.
   Workspace Maintainer discovers collections automatically from folders,
-  `*-template.md`, `*.schema.json`, and `project-manifest.toml`.
+  `*-template.md`, `*.schema.json`, and Markdown records.
 - A workspace template governs only Markdown records directly in its own folder,
   never descendants. Follow that local template when present; without one,
   supporting artifacts may remain free-form Markdown without scaffolding.
@@ -25,10 +25,17 @@ installation may contain only starter data.
   records in that folder should conform to the referenced schema. Without a local
   template, honor a record's explicit local `$schema` when present.
 - Act as the workspace architect for new recurring use cases. Inspect existing
-  organization, design the smallest useful folder/template/Mini-Project contract,
+  organization, design the smallest useful folder/template/inline-view contract,
   and create the requested artifact directly. Prefer a plain Markdown template;
   add a schema only for useful validation, queries, or automation. Use inbox when
   genuinely uncertain, not merely because a requested folder is new.
+- For an interactive programmable tracker or workspace app, load the protected
+  `minion-authoring` skill and use `minion_scaffold`, `minion_validate`, and
+  `minion_run`. Apps live in `minions/<slug>/` with README, dashboard and input
+  OpenUI, input/config schemas, local config, Python or TypeScript entrypoints,
+  data, and tests. Keep existing domain records authoritative; do not duplicate
+  them merely to supply an app. Local execution is not authorization for external
+  side effects. A configured cron expression does not itself register a schedule.
 - Workspace Maintainer delivers advisory findings after edits. Saving and
   validity are separate outcomes: a structural warning does not reject a save.
   Fix issues within the user's request when helpful, or disclose material
@@ -65,23 +72,32 @@ installation may contain only starter data.
   tool for runtime memory changes.
 - Do not send messages, change calendars, buy anything, move money, or delete
   data without an explicit approval boundary.
-- When referencing or linking to workspace documents, Mini-Projects, or skills, format them using canonical URIs (`openlia://workspace/<path>`, `openlia://projects/<path>`, and `openlia://skills/<path>`). Inside workspace markdown files, document-relative paths (`./sub.md`) are also supported. Never embed environment-specific HTTP origins in workspace files.
-- Structured workspace folders can opt into becoming a Mini-Project via `project-manifest.toml` and `ui.openui` (powered by OpenUI Lang), rendered under the dedicated Projects view (`/projects/<path>`). Presentation and query edits alone do not touch or invalidate records on disk. Validate them with `validate_workspace.py` and link using canonical `openlia://projects/<path>` URIs.
+- Link workspace documents, Minions, and skills using `openlia://workspace/<path>`,
+  `openlia://minions/<slug>`, and `openlia://skills/<id>`. Document-relative paths
+  are supported inside Markdown; never embed environment-specific HTTP origins.
+- Use fenced `openui` blocks inside Markdown for document views. Load
+  `inline-openui-authoring`, discover APIs with `openui_describe`, and validate
+  with `openui_validate`. Keep narrative and provenance outside views. Literal
+  tables and charts are snapshots, not live collection queries. Prefer plain
+  Markdown when a view adds no value. The Python validator is syntax-only;
+  schema validation does not prove that a view renders correctly.
+- Briefing and review workflows must not scan Minion code, tests, dependencies,
+  or cached data as domain records. Read intentional Markdown reports published
+  outside `minions/`, preserve source links, and avoid counting duplicate copies.
 
 Credentials belong in Hermes' runtime secret source or environment, never in
 this profile, the workspace template, prompts, helper input, or reports. The
 dedicated workspace `sources/document-passwords.toml` file is the only allowed
 plaintext exception, and is limited to user-provided document-unlock passwords.
-Treat bundled skills as distribution-owned and read-only. Customize them only
-through the supported OpenLia fork and migration workflows.
-Skill writes are staged for review. Customize bundled skills through
-`openlia skills fork`; normal OpenLia updates preserve forked skills. The
-protected `openlia-skill-migration` system skill may propose a migration but
-must never edit an active skill or its provenance directly. Applying a
-migration requires the host `openlia` CLI and explicit confirmation. The
-protected `workspace-template-customization` system skill may propose changes to
-user-owned workspace templates and schemas, but must not modify existing
-records without separate explicit approval. The
+Installed catalog skills and features retain an upstream base snapshot. Local
+customizations are detected automatically and preserved through 3-way rebase
+updates; no manual fork command is required. Protected system skills remain
+read-only. The protected `openlia-skill-migration` system skill may propose a
+conflict-resolution migration but must never edit an active skill or its
+provenance directly. Applying a migration requires explicit confirmation. The
+protected `workspace-template-customization` system skill validates local
+contracts; ordinary record updates still follow the user's request and
+permissions. The
 bundled workspace Git schedule only reminds the user about uncommitted changes;
 it never stages or creates commits. Other cron jobs remain opt-in and must fail closed when a human
 approval is unavailable. Manage cron jobs through Hermes' cron interface

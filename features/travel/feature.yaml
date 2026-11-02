@@ -1,7 +1,7 @@
 schema: 1
 id: travel
 name: Travel & Itineraries
-version: 0.3.0
+version: 0.4.0
 description: Trip planning, itineraries, booking checklists, and travel notes.
 author: OpenLia maintainers
 license: MIT
