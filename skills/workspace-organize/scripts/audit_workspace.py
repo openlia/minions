@@ -53,6 +53,20 @@ CHECKBOX_PATTERN = re.compile(r"^\s*-\s*\[([ xX])\]", re.MULTILINE)
 STATUS_PATTERN = re.compile(r"(?i)^status:\s*([a-z0-9_-]+)", re.MULTILINE)
 
 
+def _record_walk(workspace: Path, start: Path | None = None):
+    """Prune app internals and dependencies before reading ordinary records."""
+    for root, directories, files in os.walk(start or workspace, followlinks=False):
+        current = Path(root)
+        directories[:] = sorted(
+            name for name in directories
+            if not name.startswith(".")
+            and name not in {"node_modules", "__pycache__", ".venv", ".pytest_cache"}
+            and not (current / name).is_symlink()
+            and not (current == workspace and name == "minions")
+        )
+        yield root, directories, [name for name in files if not (current / name).is_symlink()]
+
+
 def _blank_code_text(text: str) -> str:
     return "".join(
         "\n" if char == "\n" else "\r" if char == "\r" else " "
@@ -124,7 +138,7 @@ def audit_inbox(workspace: Path) -> list[dict[str, Any]]:
     inbox_dir = workspace / "inbox"
     if not inbox_dir.is_dir():
         return issues
-    for root, _, files in os.walk(inbox_dir):
+    for root, _, files in _record_walk(workspace, inbox_dir):
         for file in files:
             if file.startswith(".") or file == "README.md":
                 continue
@@ -140,7 +154,7 @@ def audit_inbox(workspace: Path) -> list[dict[str, Any]]:
 
 def audit_broken_links(workspace: Path) -> list[dict[str, Any]]:
     issues = []
-    for root, _, files in os.walk(workspace):
+    for root, _, files in _record_walk(workspace):
         # Skip git or hidden dirs
         if "/." in root or "\\." in root:
             continue
@@ -211,7 +225,7 @@ def audit_completed_goals(workspace: Path) -> list[dict[str, Any]]:
     goals_dir = workspace / "goals"
     if not goals_dir.is_dir():
         return issues
-    for root, _, files in os.walk(goals_dir):
+    for root, _, files in _record_walk(workspace, goals_dir):
         for file in files:
             if not file.endswith(".md") or file in ("goal-template.md", "README.md"):
                 continue
@@ -245,7 +259,7 @@ def audit_claims(workspace: Path) -> list[dict[str, Any]]:
     claims_dir = workspace / "knowledge" / "claims"
     if not claims_dir.is_dir():
         return issues
-    for root, _, files in os.walk(claims_dir):
+    for root, _, files in _record_walk(workspace, claims_dir):
         for file in files:
             if not file.endswith(".md") or file.endswith("-template.md") or file == "README.md":
                 continue
@@ -333,7 +347,7 @@ def audit_source_provenance(
     issues: list[dict[str, Any]] = []
     vault_sources = _load_vault_source_versions(workspace, ingestion_root=ingestion_root)
 
-    for root, dirnames, files in os.walk(workspace):
+    for root, dirnames, files in _record_walk(workspace):
         dirnames[:] = [
             d for d in dirnames if not d.startswith(".") and d not in {"sources", "node_modules"}
         ]

@@ -17,7 +17,7 @@ control.
 When referencing or providing links to workspace documents, notes, or skills in user-facing responses or workspace records:
 - Format links using canonical `openlia://` URIs:
   - Workspace documents: `[Label](openlia://workspace/<path>)` (for example, `[Q4 Launch Goal](openlia://workspace/goals/q4-launch.md)` or `[Inbox Notes](openlia://workspace/inbox/2026-09-notes.md)`).
-  - Mini-Projects: `[Label](openlia://projects/<path>)` (for example, `[Tasks Project](openlia://projects/tasks)`).
+   - Minions: `[Label](openlia://minions/<slug>)` (for example, `[Gym Tracker](openlia://minions/gym-tracker)`).
   - Skills: `[Label](openlia://skills/<skill-id>)` or `[Label](openlia://skills/<skill-id>/<file>)` (for example, `[Weekly Review](openlia://skills/weekly-review)`).
 - Inside workspace markdown files, relative paths (e.g. `[Architecture](./architecture.md)`) are also supported.
 - Always use canonical `openlia://` URIs; do not hardcode environment-specific HTTP origins.

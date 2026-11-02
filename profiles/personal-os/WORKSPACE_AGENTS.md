@@ -8,7 +8,7 @@ user-owned delegation policy authorizes the scoped update.
 
 - Workspace Maintainer discovers collections automatically from folders, local
   `*-template.md` files, referenced `*.schema.json` schemas, and
-  `project-manifest.toml` manifests. Folders do not require registration before
+  Markdown records. Folders do not require registration before
   they can be created or used.
 - Consequential permissions live in `/opt/data/permissions.yaml` and govern
   destructive actions (`delete_records`, `overwrite_records`), external side
@@ -25,9 +25,9 @@ user-owned delegation policy authorizes the scoped update.
 - Use `monitors/` for conditions to watch, not for one-off tasks.
 - Use `archive/` for inactive records rather than destructive deletion.
 - New top-level and nested folders are normal workspace content. For a recurring
-  use case needing reusable organization or a Mini-Project UI, design the
-  smallest useful folder, template, optional schema, and `project-manifest.toml` /
-  `ui.openui` directly alongside the user's requested artifact.
+  use case needing reusable organization or a document view, design the
+  smallest useful folder, template, optional schema, and inline `openui` blocks.
+  Use a Minion for an interactive programmable app, not merely to display notes.
 
 ## File handling
 
@@ -68,10 +68,19 @@ user-owned delegation policy authorizes the scoped update.
   updated Markdown record directly in that folder must conform to the referenced schema
   as well as the starter template. Run the `workspace-template-customization`
   validator on demand after template, schema, or record changes.
-- **Mini-Projects (`project-manifest.toml` + `ui.openui`)**:
-  - Structured folders can opt into becoming a Mini-Project by defining `project-manifest.toml` and `ui.openui` (powered by OpenUI Lang), rendered in the dedicated **Projects** view (`/projects/<path>`).
-  - Modifying `project-manifest.toml` queries or `ui.openui` alters the presentation layer without touching or invalidating Markdown records on disk.
-  - After updating a Mini-Project's UI, validate with `validate_workspace.py` and reply with canonical links (e.g. `openlia://projects/<path>`).
+- **Inline OpenUI**: Put document views in fenced `openui` blocks. Load
+  `inline-openui-authoring`, discover exact APIs with `openui_describe`, and
+  validate with `openui_validate`. Preserve conclusions and source links outside
+  views. Literal tables are snapshots, not live queries; do not invent counts.
+- **Minions (`minions/<slug>/`)**: For a programmable tracker or app, load
+  `minion-authoring` and use `minion_scaffold`, `minion_validate`, and `minion_run`.
+  The skill defines the canonical README, dashboard/input OpenUI, input/config
+  schemas, local config, entrypoints, data, and tests. Keep one authoritative
+  location per dataset and preserve existing domain records. Local execution
+  does not authorize external effects; verify schedule registration separately
+  from a cron setting. Do not feed app internals or cached copies into generic
+  reviews. Publish intentional, source-linked Markdown reports outside
+  `minions/` for briefing/review workflows, respecting destination permissions.
 - Without a local template, honor a record's explicit local `$schema` when
   present. A record directive cannot override a local template's contract.
 - Authorization and validation are separate: report invalid content accurately,
@@ -114,7 +123,7 @@ user-owned delegation policy authorizes the scoped update.
 When referencing or providing links to workspace documents, notes, or skills in user-facing responses or workspace records:
 - Format links using canonical `openlia://` URIs:
   - Workspace documents: `[Label](openlia://workspace/<path>)` (e.g. `[Career Goal](openlia://workspace/goals/career.md)`).
-  - Mini-Projects: `[Label](openlia://projects/<path>)` (e.g. `[Tasks Project](openlia://projects/tasks)`).
+  - Minions: `[Label](openlia://minions/<slug>)` (e.g. `[Gym Tracker](openlia://minions/gym-tracker)`).
   - Skills: `[Label](openlia://skills/<skill-id>)` (e.g. `[Inbox Triage](openlia://skills/inbox-triage)`).
   - Inside workspace markdown files, document-relative links (e.g. `[Specs](./specs.md)`) are also supported.
 - Never embed environment-specific HTTP origins or hostnames into workspace records.

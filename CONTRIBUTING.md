@@ -1,8 +1,21 @@
-# Contributing templates
+# Contributing to `openlia/minions`
 
 The runtime in `openlia/openlia` supplies reusable capabilities. This repository
-assembles them into profiles, features, Mini-Projects, and skills. Keep those
+assembles them into profiles, features, Minions, document views, and skills. Keep those
 responsibilities separate, but deliver dependent changes together.
+
+## Documents, skills, and Minions
+
+Profiles select a starter experience. Features bundle domain records, schemas,
+skills, and dependencies. Skills teach Hermes workflows. Inline OpenUI presents
+information in Markdown; Minions add executable input, configuration, and
+dashboard behavior. Do not convert a document collection into an app merely to
+provide a view. See [the Minions guide](docs/minions.md) for migration boundaries
+and the runtime work required before publishing catalog Minions.
+
+The catalog registry helper in `scripts/workspace_registry.py` is also distributed
+inside workflow skills so they work independently after installation. Keep those
+copies identical; the unit suite checks every copy against the canonical helper.
 
 ## Runtime compatibility
 
@@ -65,15 +78,15 @@ Use sibling checkouts, with feature branches in both repositories:
 ```text
 dev/
 ├── open_lia/
-└── openlia_templates/
+└── openlia_minions/
 ```
 
 In the **disposable local deployment's** OpenLia `config.toml`, explicitly select
-the templates checkout:
+the catalog checkout:
 
 ```toml
 [templates]
-repo = "/absolute/path/to/dev/openlia_templates"
+repo = "/absolute/path/to/dev/openlia_minions"
 ```
 
 Run `openlia features sync` against that deployment to refresh its catalog cache.
@@ -109,7 +122,7 @@ From the runtime checkout, install its integration prerequisites and run:
 python3 -m pip install -r requirements-templates-integration.txt
 bun install --frozen-lockfile --ignore-scripts
 bun run --cwd packages/workspace-ui browser:install
-make templates-integration TEMPLATES_ROOT=../openlia_templates
+make templates-integration TEMPLATES_ROOT=../openlia_minions
 ```
 
 Native Remind must be available; the underlying Python runner also accepts
@@ -169,7 +182,7 @@ can still merge and be published independently. A release promotion is deliberat
    catalog explicitly or receive the tested default in a later runtime release.
 
 Explicit previews can still select `[templates] repo =
-"https://github.com/openlia/templates.git"` and `ref = "main"`. Remove an old
+"https://github.com/openlia/minions.git"` and `ref = "main"`. Remove an old
 `ref = "main"` override to adopt pinned defaults. Custom remotes require a ref.
 Never rewrite users' customized installations when promoting a catalog release;
 use the normal update/rebase flow.

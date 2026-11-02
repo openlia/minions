@@ -1,9 +1,0 @@
-root = Stack([header, metrics, board, table])
-header = DomainHeader("Decisions", "Structured decision records, options analysis, and review dates.")
-metrics = Grid([
-  MetricCard("Proposed", @Query("proposed_count"), "Framing options"),
-  MetricCard("Under Review", @Query("review_count"), "Evaluating trade-offs"),
-  MetricCard("Decided", @Query("decided_count"), "Committed decisions")
-], 3)
-board = RecordKanban("status", ["proposed", "under-review", "accepted", "decided"])
-table = RecordTable(["title", "status", "decision_date", "review_date"])

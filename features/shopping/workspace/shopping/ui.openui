@@ -1,9 +1,0 @@
-root = Stack([header, metrics, board, table])
-header = DomainHeader("Shopping", "Track purchase research, target prices, and budgets.")
-metrics = Grid([
-  MetricCard("Researching", @Query("researching_count"), "Comparing options"),
-  MetricCard("Ready to Buy", @Query("ready_count"), "Approved purchases"),
-  MetricCard("Total Budget", @Query("total_budget"), "Planned spend")
-], 3)
-board = RecordKanban("status", ["wishlist", "researching", "watching-price", "ready-to-buy", "purchased"])
-table = RecordTable(["title", "category", "priority", "budget", "target_price", "status"])

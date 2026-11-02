@@ -1,8 +1,8 @@
 schema: 1
 id: tasks
 name: Tasks & Action Tracking
-version: 0.1.0
-description: Concrete actions, priorities, due dates, and interactive task board Mini-Project.
+version: 0.2.0
+description: Durable Markdown action records with priorities, due dates, and completion tracking.
 author: OpenLia maintainers
 license: MIT
 requires:

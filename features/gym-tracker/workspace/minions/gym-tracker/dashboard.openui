@@ -1,0 +1,4 @@
+Stack(children: [
+  Callout(variant: "info", title: "Context & Recommendations", description: "0 total entries (0 active). Next recommendation: Log your first workout session to calculate volume and progressive overload targets."),
+  Table(title: "Gym Tracker", columns: [{"key": "date", "label": "Date"}, {"key": "item", "label": "Exercise"}, {"key": "category", "label": "Focus"}, {"key": "value", "label": "Top Load"}, {"key": "status", "label": "Status"}, {"key": "recommendation", "label": "Recommendation"}], rows: [])
+])

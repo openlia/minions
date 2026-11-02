@@ -1,7 +1,7 @@
 ---
 name: weekly-review
 description: Review goals, tasks, decisions, health records, and finance open loops without acting.
-version: 0.1.0
+version: 0.2.0
 platforms: [macos, linux]
 required_environment_variables: []
 required_credential_files: []
@@ -20,7 +20,7 @@ of outcomes for the next period.
 
 ## Procedure
 
-1. Gather current goal, task, and claim records—plus decision, health, and finance records when those feature domains are registered in `workspace.yaml`—as read-only
+1. Gather current goal, task, and claim records—plus decision, health, and finance records when those collections exist—as read-only
    inputs. Read research briefs linked from active goals, open decisions, and
    unresolved tasks; research briefs are supporting records, not a replacement
    for those domain records.
@@ -39,7 +39,7 @@ of outcomes for the next period.
    ended before the question was resolved, or the open loop still lacks enough
    evidence.
 5. Draft a short next-week list. Apply routine updates only when the current
-   request or `assistant-policy.yaml` delegates them; otherwise ask before
+    request authorizes them, respecting `/opt/data/permissions.yaml`; otherwise ask before
    changing workspace records.
 
 The input object accepts `week`, `goals`, `tasks`, `decisions`, `claims`,
@@ -54,6 +54,12 @@ The saved or chat report must preserve the template headings: completed work,
 closed or cancelled work, active goals, open loops, research follow-ups,
 decisions to revisit, claims to review, health records to review, and next-week
 outcomes with first actions.
+
+Minions are apps, not generic record collections. Include intentional,
+source-linked Markdown exports outside `minions/` when relevant, not app code,
+tests, dependencies, or cached data. Preserve one authoritative record per fact;
+do not count an export and its source twice. Missing exports mean unavailable
+evidence, not zero activity. Never execute a Minion during a read-only review.
 
 ## Pitfalls
 

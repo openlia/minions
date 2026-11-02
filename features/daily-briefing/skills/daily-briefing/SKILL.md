@@ -1,7 +1,7 @@
 ---
 name: daily-briefing
 description: Collect workspace sources and prepare an evidence-based daily briefing.
-version: 0.1.0
+version: 0.2.0
 platforms: [macos, linux]
 required_environment_variables: []
 required_credential_files: []
@@ -21,10 +21,14 @@ Use for a morning or on-demand briefing that synthesizes calendar events,
 active tasks, monitors, recent changes, and personal priorities into an
 actionable snapshot.
 
-Read `workspace.yaml` and `assistant-policy.yaml` first when they exist. The registry controls which core
-and user-registered extension paths are included. A registered extension is
-included only when it opts into briefings; an unregistered directory is never
-silently scanned.
+The bundled registry helper discovers collections from folders, local templates,
+schemas, and Markdown records; `workspace.yaml` registration is not required.
+Read `/opt/data/permissions.yaml` for scheduled-work and consequential-action
+boundaries. Minions are discovered as apps, not generic briefing sources. Read
+intentional, dated Markdown exports outside `minions/` when available; never
+scan code, tests, dependencies, or cached app data as domain records, and never
+execute an app merely to collect a briefing. Link canonical records and avoid
+counting both an export and its source as separate activity.
 
 ## Gather Sources
 
@@ -37,11 +41,9 @@ python scripts/build_briefing.py --collect \
   --date YYYY-MM-DD
 ```
 
-The collector prints a compact, read-only source packet. Without a registry it
-uses the standard source domains: `calendar/`, `tasks/`, `goals/`,
-`decisions/`, `monitors/`, `knowledge/claims/`, and `inbox/`. With a registry it
-uses only entries whose `include_in_briefing` is true, including registered
-extensions. It uses structured dates and statuses where available, includes
+The collector prints a compact, read-only source packet using discovered entries
+whose `include_in_briefing` is true, including extension collections but excluding
+Minions. It uses structured dates and statuses where available, includes
 active records and recent open loops, and reports missing source directories
 separately from directories with no matching records. By default it includes
 calendar and due-date items through the next seven days, recent decisions and

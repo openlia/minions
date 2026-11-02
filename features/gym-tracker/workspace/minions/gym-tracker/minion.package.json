@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "files": [
+    "README.md",
+    "dashboard.openui",
+    "input.openui",
+    "input.schema.json",
+    "config.schema.json",
+    "input.py",
+    "main.py",
+    "requirements.txt",
+    "tests/test_main.py"
+  ]
+}

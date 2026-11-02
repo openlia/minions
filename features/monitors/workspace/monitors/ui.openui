@@ -1,9 +1,0 @@
-root = Stack([header, metrics, board, table])
-header = DomainHeader("Monitors", "Active watch topics, check cadences, and alert channels.")
-metrics = Grid([
-  MetricCard("Active", @Query("active_monitors"), "Currently watching"),
-  MetricCard("Triggered", @Query("triggered_monitors"), "Needs review"),
-  MetricCard("Paused", @Query("paused_monitors"), "Temporarily muted")
-], 3)
-board = RecordKanban("status", ["active", "triggered", "paused", "retired"])
-table = RecordTable(["title", "source", "check_frequency", "last_checked", "status"])

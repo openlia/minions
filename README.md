@@ -1,15 +1,15 @@
-# OpenLia Templates (`https://github.com/openlia/templates.git`)
+# OpenLia Minions & Catalog (`https://github.com/openlia/minions.git`)
 
-> Public community catalog of workspace profiles, modular domain features, OpenUI Mini-Projects, and workflow skills for [OpenLia](https://github.com/openlia/openlia).
+> Public community catalog of workspace profiles, modular domain features, programmable Minion apps, and workflow skills for [OpenLia](https://github.com/openlia/openlia).
 
-OpenLia starts with an ultra-minimal generic workspace (`AGENTS.md`, `sources/`, and `inbox/ingestion/`). From this repository, you can pick and install only the profiles, domain features, Mini-Projects, and skills you need—and customize them freely while retaining upstream 3-way rebase support.
+OpenLia starts with an ultra-minimal generic workspace (`AGENTS.md`, `sources/`, and `inbox/ingestion/`). Install only the profiles, domain features, Minions, and skills you need, and customize them while retaining upstream 3-way rebase support. Use inline OpenUI for document views and **Minions** for programmable workspace apps; see [the architecture and migration guide](docs/minions.md).
 
 ---
 
 ## Repository Structure
 
 ```text
-openlia/templates
+openlia/minions
 ├── catalog.json             # Machine-readable index of profiles, features, and skills
 ├── feature.schema.json      # JSON Schema for feature.yaml manifests
 ├── profiles/                # Complete starter profiles (e.g., personal-os)
@@ -18,7 +18,7 @@ openlia/templates
 │       ├── SOUL.md
 │       ├── AGENTS.md
 │       └── WORKSPACE_AGENTS.md
-├── features/                # Modular domain packages (workspace templates + schemas + OpenUI + skills)
+├── features/                # Modular domain packages (workspace templates + schemas + OpenUI + Minions + skills)
 │   ├── areas/
 │   ├── calendar/            # requires.tools: ["remind"]
 │   ├── claims/
@@ -26,6 +26,7 @@ openlia/templates
 │   ├── decision-analysis/
 │   ├── deep-research/
 │   ├── goals/
+│   ├── gym-tracker/         # Pilot Minion app (minions/gym-tracker)
 │   ├── ideas/
 │   ├── monitors/
 │   ├── people/
@@ -51,7 +52,7 @@ openlia/templates
 ## Usage with `openlia` CLI
 
 ```bash
-# Sync the runtime release's pinned catalog (or your explicit templates source/ref)
+# Sync the runtime release's pinned catalog (or your explicit catalog source/ref)
 openlia features sync
 
 # List available features and skills

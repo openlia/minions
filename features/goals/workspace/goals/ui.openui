@@ -1,9 +1,0 @@
-root = Stack([header, metrics, board, table])
-header = DomainHeader("Goals", "Longer-horizon outcomes and review cadences.")
-metrics = Grid([
-  MetricCard("Active Goals", @Query("active_goals"), "In focus"),
-  MetricCard("Paused", @Query("paused_goals"), "On hold"),
-  MetricCard("Completed", @Query("completed_goals"), "Achieved")
-], 3)
-board = RecordKanban("status", ["active", "paused", "completed"])
-table = RecordTable(["title", "status", "target_completion", "review_rhythm"])

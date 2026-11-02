@@ -1,8 +1,8 @@
 schema: 1
 id: goals
 name: Goals & Outcomes
-version: 0.1.0
-description: High-level outcomes, rationale, milestones, and interactive goals Mini-Project.
+version: 0.2.0
+description: Durable Markdown goal records with outcomes, rationale, milestones, and review cadences.
 author: OpenLia maintainers
 license: MIT
 requires:

@@ -1,8 +1,0 @@
-root = Stack([header, metrics, table])
-header = DomainHeader("People", "Directory of relationships, organizations, and follow-up context.")
-metrics = Grid([
-  MetricCard("Colleagues", @Query("colleagues_count"), "Work network"),
-  MetricCard("Collaborators", @Query("collaborators_count"), "Active partners"),
-  MetricCard("Friends", @Query("friends_count"), "Personal network")
-], 3)
-table = RecordTable(["title", "relationship", "organization", "role", "last_contacted"])
