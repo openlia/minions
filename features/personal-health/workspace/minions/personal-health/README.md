@@ -40,8 +40,9 @@ superseding records rather than silently rewriting history. The initial form
 creates records, not destructive edits.
 
 Managed upgrades preserve `data/` and `config.json`; neither is distributable app
-source. No compatible released runtime minimum has yet been assigned; test the
-exact runtime/catalog pair before release promotion.
+source. For early development, `requires.openlia` is intentionally unset: test
+exact runtime/catalog commit SHAs together. This provides no minimum-version guard
+or compatibility guarantee; revisit the minimum at the first stable release.
 
 ## Verification
 

@@ -19,8 +19,8 @@ copies identical; the unit suite checks every copy against the canonical helper.
 
 ## Runtime compatibility
 
-When content needs a runtime capability that older releases lack, declare its
-minimum **released** OpenLia version in `feature.yaml`, `profile.yaml`, or the
+For stable catalog releases, when content needs a capability older runtimes lack,
+declare its minimum **released** OpenLia version in `feature.yaml`, `profile.yaml`, or the
 YAML frontmatter of `SKILL.md`:
 
 ```yaml
@@ -31,6 +31,25 @@ requires:
 The initial contract supports only `>=MAJOR.MINOR.PATCH`, with no leading zeros.
 Ranges, prerelease minima, tags, commit SHAs, and PR numbers are not supported.
 Do not add a requirement unless you can identify the compatible release.
+
+### Development before the first stable release
+
+For coordinated development previews, intentionally leave `requires.openlia`
+unset until a compatible stable release exists. An unset minimum provides no
+minimum-version guard or compatibility guarantee. Keep other dependencies, such
+as `requires.tools`, and any existing declared runtime requirements intact.
+
+Use `main` as the moving development branch and record the exact runtime/catalog
+commit SHAs tested together. `main` may be a catalog source ref, but neither it nor
+a commit SHA is a valid `requires.openlia` value. A development version string
+alone does not identify a compatible source pair.
+
+At the first stable release, publish an immutable version tag and declare truthful
+minimums for packages that need them. Never move a published version tag to newer
+code or invent a version requirement merely to merge development changes. Preview
+testing does not require changing a production catalog pin.
+
+### Enforcement
 
 - Missing `requires.openlia` preserves legacy behavior; it does not prove that
   the content works on every runtime.
@@ -56,7 +75,8 @@ Do not add a requirement unless you can identify the compatible release.
 Use one parent issue and one delivery owner. In both PRs include:
 
 - The parent issue and companion PR.
-- The new runtime capability and its first compatible release.
+- The new runtime capability and, for stable releases, its first compatible release.
+  For development previews, state that `requires.openlia` is intentionally unset.
 - Exact runtime/template commit SHAs used for the combined test.
 - Results for a compatible pair and rejection by the enforcing runtime against
   an older deployment; local evidence is not production acceptance.
