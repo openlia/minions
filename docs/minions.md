@@ -105,9 +105,12 @@ keeps the app directory; it does not disable manual execution.
 
 See the paired runtime's [full distribution contract](https://github.com/openlia/openlia/blob/main/docs/minion-distribution.md)
 for supported defaults, collision handling, archive layouts, and update behavior.
-This is a new runtime capability: before publishing a catalog app, assign its
-actual first compatible **released** runtime requirement and test the exact pair.
-Do not invent a release minimum or promote an untested catalog pin.
+Before the first stable release, coordinated development previews intentionally
+leave `requires.openlia` unset and test exact runtime/catalog commit SHAs together.
+An unset minimum provides no minimum-version guard or compatibility guarantee.
+For stable catalog releases, declare the actual first compatible **released**
+runtime requirement. Do not invent a minimum, move a published version tag, or
+promote an untested catalog pin merely to preview an app.
 
 Automatic scheduling, enable/disable behavior, timezone handling, concurrency,
 retries, and scheduling permissions remain the next phase. A cron value alone is

@@ -11,10 +11,11 @@ setup, structured entry, and configuration. The
 also provides ledger reports and account mappings. Browse review documents in
 `minions/personal-finance/data/reviews/` through Documents.
 
-Runtime hledger and Finance `dataPath` support are required. No compatible
-released runtime minimum has been assigned yet; the unchanged development
-version is not a compatibility guarantee. Preserve records, configuration, and
-local customizations through the normal managed update/rebase flow.
+Runtime hledger and Finance `dataPath` support are required. During early
+development, `requires.openlia` is intentionally unset: use a tested pair of
+runtime/catalog commit SHAs. There is no minimum-version guard or compatibility
+guarantee. Preserve records, configuration, and local customizations through the
+normal managed update/rebase flow.
 
 ## Account mappings, not journal mutations
 

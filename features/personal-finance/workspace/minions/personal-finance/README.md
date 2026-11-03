@@ -19,9 +19,10 @@ Structured posting supports portable ASCII journal paths (letters, digits,
 underscores, dashes, dots, and directory separators); advanced include layouts
 are left untouched and require the Finance skill rather than silent conversion.
 Automatic triggers default off; there is no cron default. Manual Refresh reads
-records only. Reports require the companion runtime's Finance `dataPath` support;
-no compatible released minimum has yet been assigned. Do not publish a production
-catalog pin until that runtime is released and the exact pair has been tested.
+records only. Reports require the companion runtime's Finance `dataPath` support.
+For early development, `requires.openlia` is intentionally unset: use a tested
+runtime/catalog commit pair. This provides no minimum-version guard or compatibility
+guarantee; no release bump or production catalog pin change is needed for a preview.
 
 ## Structured input
 
