@@ -1,98 +1,23 @@
 schema: 1
 id: personal-health
 name: Personal & Family Health Records
-version: 0.3.0
-description: Family medical history, health profiles, encounters, conditions, treatments, and source-linked clinician reviews.
+version: 0.4.0
+description: Personal Health Minion with family profiles, structured encounters, conditions, treatments, measurements, and source-linked records.
 author: OpenLia maintainers
 license: MIT
 requires:
-  core_domains:
-    - inbox
-    - sources
-    - archive
-  features: []
+  core_domains: [inbox, sources, archive]
 domains:
-  - path: health
+  - path: minions/personal-health
     kind: extension
-    label: Health
-    purpose: Family medical history and clinically significant care records.
+    label: Personal Health
+    purpose: Person-scoped health records and input forms; canonical records live in this app's data directory.
     lifecycle: active -> archived
-    tags:
-      - health
-      - medical-history
-    skills:
-      - personal-health
-    feature: personal-health
-  - path: health/profiles
-    kind: extension
-    label: Health Profiles
-    purpose: Stable identities and family-member boundaries for health records.
-    lifecycle: active -> archived
-    tags:
-      - health
-      - profile
-    template: health/profiles/profile-template.md
-    skills:
-      - personal-health
-    feature: personal-health
-  - path: health/history
-    kind: extension
-    label: Health History
-    purpose: Significant symptoms, encounters, tests, procedures, and immunizations.
-    lifecycle: reported -> confirmed -> amended or archived
-    tags:
-      - health
-      - history
-    template: health/history/history-template.md
-    skills:
-      - personal-health
-    feature: personal-health
-  - path: health/conditions
-    kind: extension
-    label: Health Conditions
-    purpose: Diagnoses, allergies, intolerances, risks, and family-history entries.
-    lifecycle: unconfirmed -> confirmed, resolved, or archived
-    tags:
-      - health
-      - condition
-    template: health/conditions/condition-template.md
-    skills:
-      - personal-health
-    feature: personal-health
-  - path: health/treatments
-    kind: extension
-    label: Health Treatments
-    purpose: Medication and other care courses with prescribed or reported status.
-    lifecycle: planned -> active -> completed, stopped, or archived
-    tags:
-      - health
-      - treatment
-    template: health/treatments/treatment-template.md
-    skills:
-      - personal-health
-    feature: personal-health
-  - path: health/reviews
-    kind: extension
-    label: Health Reviews
-    purpose: Source-linked medical summaries and clinician handoff reports.
-    lifecycle: draft -> final -> archived
-    tags:
-      - health
-      - review
-    template: health/reviews/review-template.md
-    skills:
-      - personal-health
+    skills: [personal-health]
     feature: personal-health
 skills:
   - id: personal-health
     path: skills/personal-health
-    workspace_domains:
-      - health
-      - health/profiles
-      - health/history
-      - health/conditions
-      - health/treatments
-      - health/reviews
+    workspace_domains: [minions/personal-health]
 policy:
-  allowed_domains:
-    - health
+  allowed_domains: [minions/personal-health/data]

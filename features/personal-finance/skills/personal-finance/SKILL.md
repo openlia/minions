@@ -1,16 +1,12 @@
 ---
 name: personal-finance
 description: Use hledger and structured finance records to organize, validate, reconcile, and review personal finances.
-version: 0.5.0
+version: 0.6.0
 platforms: [macos, linux]
 required_environment_variables: []
 required_credential_files: []
 workspace_domains:
-  - finance
-  - finance/intake
-  - finance/accounts
-  - finance/portfolios
-  - finance/reviews
+  - minions/personal-finance
 metadata:
   hermes:
     tags: [personal-os, finance, hledger, accounting, investing]
@@ -18,6 +14,16 @@ metadata:
 ---
 
 # Personal Finance
+
+## Canonical app data
+
+Open [Personal Finance](openlia://minions/personal-finance). The authoritative
+root is `minions/personal-finance/data/`. Portable contracts are under
+`minions/personal-finance/templates/`. Write records with an explicit relative
+`$schema` pointing to the chosen contract. Read configuration from the app's
+`config.json` and honor its `journal` main entry point. The structured form
+previews a posting before a separate POST confirmation. An app trigger never
+authorizes a ledger write.
 
 ## When to Use
 
@@ -58,21 +64,21 @@ When posting journal entries, cite the canonical source URI using an hledger com
     expenses:consulting    $500.00
     assets:checking
 ```
-Finance intake records and reviews in `finance/intake/` cite evidence using `[Document Title](openlia://source/{source_id}#{version_id}/p{page})`.
+Finance intake records and reviews in `minions/personal-finance/data/intake/` cite evidence using `[Document Title](openlia://source/{source_id}#{version_id}/p{page})`.
 Use [Document Intelligence](openlia://skills/document-intelligence) when capturing new statements, payslips, or password-protected PDFs (`ingestion_capture(..., wait_seconds=15, auto_unlock=True)`) and when inspecting multi-page statements via `page_outline`.
 To locate unposted or unreviewed receipts, query `ingestion_search(tags=["finance"], review_status="needs-review")` and inspect structured `custom_fields` (`total_amount`, `currency`, `due_date`, `invoice_number`, `account_hint`) via `ingestion_get_document(source_id=...)`.
 Once transactions are posted and validated, mark the source reviewed via `ingestion_update_document(source_id=..., review={"status": "reviewed"})`.
 
 ### Amended & Deleted Source Reconciliation
 
-- **Amended / Replaced Statements or Invoices (`new_version_uploaded`)**: When a source document is updated with a new version (`ver_002`) or flagged with `stale_backlinks` in `finance/`, compare the new version's extracted amounts, dates, and line items against existing postings in `finance/journal.hledger` (or yearly includes) citing `; source: openlia://source/{source_id}`. Never silently mutate historical transactions: propose either an explicit adjustment entry or an authorized update of the posting and its version pin (`#ver_002`), then validate with `hledger check` and mark the source `reviewed`.
+- **Amended / Replaced Statements or Invoices (`new_version_uploaded`)**: When a source document is updated with a new version (`ver_002`) or flagged with `stale_backlinks` in `minions/personal-finance/data/`, compare the new version's extracted amounts, dates, and line items against existing postings in `minions/personal-finance/data/journal.hledger` (or yearly includes) citing `; source: openlia://source/{source_id}`. Never silently mutate historical transactions: propose either an explicit adjustment entry or an authorized update of the posting and its version pin (`#ver_002`), then validate with `hledger check` and mark the source `reviewed`.
 - **Deleted Source Evidence (`; source-deleted: src_...`)**: When a Vault source is permanently deleted via `ingestion_delete_document`, any existing journal comments are rewritten to `; source-deleted: {source_id}`. If the source was deleted because the upload was a duplicate or error and the transaction itself should be removed or reversed, confirm with the user under `record_financial_data` authority and run `hledger check` after any journal edit.
 
 
 ## Data Model
 
 Keep the hledger journal and any hledger rules files in the runtime workspace,
-normally under `/opt/data/workspace/finance/`. Prefer one main journal with
+normally under `/opt/data/workspace/minions/personal-finance/data/`. Prefer one main journal with
 included files only when the journal is large enough to benefit from that
 organization. The journal is authoritative for transactions and holdings;
 Markdown records are configuration, intake, review, and research context.
@@ -84,7 +90,7 @@ main entry point with explicit yearly includes within the registered finance
 path. For example:
 
 ```text
-finance/
+minions/personal-finance/data/
   journal.hledger
   2024.hledger
   2025.hledger
@@ -133,8 +139,8 @@ write under this skill's authority rules, not generic workspace cleanup:
 
 #### Workspace UI and ledger scopes
 
-The inline view in `finance/overview.md` provides read-only native hledger reports and **New
-account** mapping creation. Saving a mapping changes only `finance/accounts/`:
+The Minion dashboard and `minions/personal-finance/overview.md` provide read-only native hledger reports and **New
+account** mapping creation. Saving a mapping changes only `minions/personal-finance/data/accounts/`:
 it never creates a journal, adds an `account` directive, posts an opening balance,
 or changes an external account. Its template/schema and defaults are observable
 before saving. An opening-balance date is evidence metadata, not a posting.
@@ -164,26 +170,26 @@ Account names, currencies, categories, and instrument symbols are user choices.
 Do not rename or reclassify existing accounts without explaining the proposal.
 Use the registered records as follows:
 
-- `finance/intake/`: one source batch or manual capture through extraction,
+- `minions/personal-finance/data/intake/`: one source batch or manual capture through extraction,
   posting, and reconciliation.
-- `finance/accounts/`: non-secret account-to-ledger mappings, currencies, and
+- `minions/personal-finance/data/accounts/`: non-secret account-to-ledger mappings, currencies, and
   reconciliation cadence.
-- `finance/portfolios/`: valuation scope, quantities, prices, cost-basis gaps,
+- `minions/personal-finance/data/portfolios/`: valuation scope, quantities, prices, cost-basis gaps,
   allocation, and performance context.
-- `finance/reviews/`: periodic reports with explicit scope and data quality.
-- `finance/`: legacy or general finance plans and reviews.
+- `minions/personal-finance/data/reviews/`: periodic reports with explicit scope and data quality.
+- `minions/personal-finance/data/`: general finance plans and supporting records.
 
 ## Procedure
 
 1. **Resolve the workspace.** Read the registry, policy, relevant finance
    template and schema, and any existing records. Use `LEDGER_FILE` when set.
-   Otherwise inspect `finance/` for one unambiguous journal. If multiple
+   Otherwise inspect `minions/personal-finance/data/` for one unambiguous journal. If multiple
    journals are plausible, inspect include directives to distinguish the main
    entry point from its included files; ask if the entry point remains ambiguous.
    Never expose the complete journal unless specifically requested.
 2. **Create the journal only for an approved write.** If no journal exists, do
    not create one for a read-only request. When the person explicitly approves
-   a specific journal change, create `finance/journal.hledger` in the runtime
+   a specific journal change, create `minions/personal-finance/data/journal.hledger` in the runtime
    workspace as part of that approved change. Do not ask for a journal path just
    to perform this setup; tell the person which default path you used. Preserve
    any existing file at that path, and ask if it is present but cannot safely be
@@ -193,7 +199,7 @@ Use the registered records as follows:
    balances, cash flow, net worth, or investments. Do not combine currencies
    without dated prices and an explicit conversion method.
 4. **Create or update intake.** For a statement, receipt, payslip, screenshot,
-   CSV, or conversational entry, use `finance/intake/` when the source needs
+   CSV, or conversational entry, use `minions/personal-finance/data/intake/` when the source needs
    extraction, review, posting, or reconciliation. Preserve the stable source
    reference and mark unknown fields instead of guessing.
 5. **Extract and normalize.** Inspect columns or document fields, dates,
@@ -316,7 +322,7 @@ only after it has actually happened and the local write is authorized.
 ## Workflow Handoffs
 
 - **Inbox triage:** explicit financial source material routes to
-  `finance/intake/`; investment questions remain research or decision candidates
+  `minions/personal-finance/data/intake/`; investment questions remain research or decision candidates
   unless the source clearly requests finance intake.
 - **Daily briefing:** registered finance reviews surface due or recently changed
   reviews; intake records surface blocked, pending-review, or reconciliation

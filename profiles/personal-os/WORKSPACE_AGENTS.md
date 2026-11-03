@@ -53,8 +53,8 @@ user-owned delegation policy authorizes the scoped update.
     - `ideas/idea-template.md`: seeds, opportunities, and exploration questions (`ideas` feature).
     - `travel/trip-template.md`: itineraries, reservations, and packing lists (`travel` feature).
     - `shopping/item-template.md`: product research, price targets, and evaluations (`shopping` feature).
-    - `finance/finance-template.md`, `finance/intake/intake-template.md`, `finance/accounts/accounts-template.md`, `finance/portfolios/portfolios-template.md`, `finance/reviews/reviews-template.md`: double-entry accounting and financial reviews (`personal-finance` feature).
-    - `health/profiles/profile-template.md`, `health/history/history-template.md`, `health/conditions/condition-template.md`, `health/treatments/treatment-template.md`, `health/reviews/review-template.md`: family medical history and clinical records (`personal-health` feature).
+    - `minions/personal-finance/templates/`: finance record contracts; authoritative journals and records live in `minions/personal-finance/data/` (`personal-finance` app and skill).
+    - `minions/personal-health/templates/`: health record contracts; person-scoped clinical records live in `minions/personal-health/data/` (`personal-health` app and skill).
 - Prefer Markdown and small structured files with stable, descriptive names.
 - Distinguish semantic domain records from supporting artifacts. Use a suitable
   local template for recurring artifacts rather than forcing a daily menu or

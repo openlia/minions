@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Personal Health Configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["trigger"],
+  "properties": {
+    "trigger": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "on_new_entry": {"type": "boolean", "default": false},
+        "cron": {"type": "string", "minLength": 1}
+      },
+      "default": {"on_new_entry": false}
+    }
+  }
+}

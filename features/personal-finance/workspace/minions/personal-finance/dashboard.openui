@@ -1,0 +1,4 @@
+Stack(children: [
+  Callout(variant: "info", title: "Personal Finance", description: "No journal is shipped or initialized. Add a structured entry to preview it; confirmation is required before posting. Manual Refresh loads existing intake. Automatic triggers are off."),
+  Finance(children: [FinanceOverview(), FinanceChart(report: "income-expenses", kind: "bar"), FinanceChart(report: "balances", kind: "line"), FinanceAccounts()], dataPath: "minions/personal-finance/data")
+])

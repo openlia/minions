@@ -1,7 +1,7 @@
 ---
 name: inbox-triage
 description: Classify captured items into reviewable workspace destinations without applying consequential changes.
-version: 0.3.0
+version: 0.4.0
 platforms: [macos, linux]
 required_environment_variables: []
 required_credential_files: []
@@ -43,7 +43,7 @@ metadata:
   - `decision` -> `decisions/`
   - `idea` -> `ideas/`
   - `research` -> `knowledge/research/`
-  - `finance` -> registered `finance/intake/`
+  - `finance` -> `minions/personal-finance/data/intake/` when the app is installed.
   - `claim` -> `knowledge/claims/`
   - `archive` -> `archive/`
   - `review` -> remain in `inbox/` pending clarification

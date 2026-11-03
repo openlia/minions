@@ -239,15 +239,11 @@
     {
       "id": "personal-finance",
       "name": "Personal Finance & Double-Entry Accounting",
-      "version": "0.5.0",
-      "description": "Read-only hledger dashboards, structured account mappings, double-entry bookkeeping, statement intake, and financial reviews.",
+      "version": "0.6.0",
+      "description": "Personal Finance Minion with native hledger reports, confirmed transaction intake, account mappings, and source-linked reviews.",
       "path": "features/personal-finance",
       "domains": [
-        "finance",
-        "finance/intake",
-        "finance/accounts",
-        "finance/portfolios",
-        "finance/reviews"
+        "minions/personal-finance"
       ],
       "skills": [
         "personal-finance"
@@ -257,7 +253,6 @@
           "inbox",
           "sources"
         ],
-        "features": [],
         "tools": [
           "hledger"
         ]
@@ -266,16 +261,11 @@
     {
       "id": "personal-health",
       "name": "Personal & Family Health Records",
-      "version": "0.3.0",
-      "description": "Family medical history, health profiles, encounters, conditions, treatments, and source-linked clinician reviews.",
+      "version": "0.4.0",
+      "description": "Personal Health Minion with family profiles, structured encounters, conditions, treatments, measurements, and source-linked records.",
       "path": "features/personal-health",
       "domains": [
-        "health",
-        "health/profiles",
-        "health/history",
-        "health/conditions",
-        "health/treatments",
-        "health/reviews"
+        "minions/personal-health"
       ],
       "skills": [
         "personal-health"
@@ -285,8 +275,7 @@
           "inbox",
           "sources",
           "archive"
-        ],
-        "features": []
+        ]
       }
     },
     {
@@ -373,7 +362,7 @@
     {
       "id": "inbox-triage",
       "name": "inbox-triage",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "description": "Classify captured items into reviewable workspace destinations without applying consequential changes.",
       "path": "skills/inbox-triage",
       "requires": {}

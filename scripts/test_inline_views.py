@@ -40,7 +40,6 @@ class InlineViewTests(unittest.TestCase):
     def test_native_views_are_markdown_not_mini_projects(self):
         for feature, folder, component, template in (
             ("calendar", "calendar", "Calendar", "event-note-template.md"),
-            ("personal-finance", "finance", "Finance", "finance-template.md"),
         ):
             with self.subTest(feature=feature):
                 root = ROOT / "features" / feature / "workspace" / folder
@@ -56,6 +55,14 @@ class InlineViewTests(unittest.TestCase):
                 for line in template_body.splitlines():
                     if line.startswith("## "):
                         self.assertIn(line, body)
+
+    def test_finance_app_keeps_its_inline_view_outside_instance_data(self):
+        root = ROOT / "features/personal-finance/workspace/minions/personal-finance"
+        view = (root / "overview.md").read_text()
+        metadata, body = parse_frontmatter(view)
+        self.assertTrue((root / metadata["$schema"]).is_file())
+        self.assertIn('dataPath: "minions/personal-finance/data"', body)
+        self.assertFalse((root / "data").exists())
 
 
 if __name__ == "__main__":

@@ -1,21 +1,24 @@
-# Personal Finance 0.5
+# Personal Finance 0.6
 
-Open [Finance](openlia://workspace/finance/overview.md) for Overview, Flows, Spending, Trends,
-and Accounts. Browse review documents in `finance/reviews/` through Documents;
-the old manifest-backed Reviews table is removed. Deploy a workspace-ui release supporting `Finance`,
-`FinanceOverview`, `FinanceChart`, `FinanceAccounts`, and `SankeyDiagram` before
-updating this feature. Runtime hledger must also be installed.
+Open [Personal Finance](openlia://minions/personal-finance) for the standalone
+app. Canonical journals and supporting documents live in
+`minions/personal-finance/data/`; managed contracts live in its `templates/`.
+The input form validates and previews a transaction; a separate confirmation
+authorizes the exact local posting. Automatic triggers remain off by default.
+See the [app documentation](workspace/minions/personal-finance/README.md) for
+setup, structured entry, and configuration. The
+[Finance document view](openlia://workspace/minions/personal-finance/overview.md)
+also provides ledger reports and account mappings. Browse review documents in
+`minions/personal-finance/data/reviews/` through Documents.
 
-Personal Finance 0.5.0 requires the inline OpenUI runtime in `openlia/openlia#193`.
-The view lives in a fenced `openui` block in Markdown. Deploy the compatible
-runtime first; no compatible released minimum has been assigned yet, and the
-unchanged development version is not a compatibility guarantee. Preserve local
-files through the normal feature update/rebase flow, never automatic deletion
-of old manifests, UI files, records, or journals.
+Runtime hledger and Finance `dataPath` support are required. No compatible
+released runtime minimum has been assigned yet; the unchanged development
+version is not a compatibility guarantee. Preserve records, configuration, and
+local customizations through the normal managed update/rebase flow.
 
 ## Account mappings, not journal mutations
 
-**New account** exposes the installed `finance/accounts/` template/schema before
+**New account** exposes the installed app's `templates/accounts/` contract before
 any save. Fill the display name, ledger account, non-secret institution label,
 currencies, status, journal scope, reconciliation fields, and notes. Cancelling
 writes nothing. Saving creates one complete Markdown mapping record only.

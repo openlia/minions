@@ -1,7 +1,7 @@
 ---
 $schema: ./history-template.schema.json
 id: null # Stable identifier, e.g. history-20261009-001.
-person_id: null # Must match one health/profiles/<person_id>.md record.
+person_id: null # Must match one data/profiles/<person_id>.md record.
 kind: other # symptom | encounter | test | procedure | immunization | hospitalization | allergy-reaction | other
 status: reported # draft | reported | confirmed | amended | entered-in-error | archived
 occurred_start: null # YYYY, YYYY-MM, YYYY-MM-DD, or ISO-8601 date-time with timezone.

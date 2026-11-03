@@ -30,8 +30,8 @@ openlia/minions
 │   ├── ideas/
 │   ├── monitors/
 │   ├── people/
-│   ├── personal-finance/    # requires.tools: ["hledger"]
-│   ├── personal-health/
+│   ├── personal-finance/    # Minion app + skill; requires.tools: ["hledger"]
+│   ├── personal-health/     # Minion app + skill; person-scoped clinical records
 │   ├── shopping/
 │   ├── tasks/
 │   └── travel/

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Personal Finance Configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["trigger", "journal"],
+  "properties": {
+    "trigger": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "on_new_entry": {"type": "boolean", "default": false},
+        "cron": {"type": "string", "minLength": 1}
+      },
+      "default": {"on_new_entry": false}
+    },
+    "journal": {
+      "type": "string",
+      "pattern": "^(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*/)*[A-Za-z0-9_-][A-Za-z0-9_.-]*\\.(?:hledger|journal)$",
+      "default": "journal.hledger",
+      "description": "Main journal relative to this app's data directory. Never initialized by a report."
+    }
+  }
+}
