@@ -156,6 +156,13 @@ python3 -m unittest discover -s scripts -p 'test_*.py'
 python3 scripts/validate_catalog.py --no-self-test
 ```
 
+The unit suite also runs the packaged Python Minion tests in isolated temporary
+workspaces. Install native `hledger` to exercise Finance accounting tests (CI
+installs it explicitly). Each app's tests can also run from its directory with
+`python3 -B -m unittest discover -s tests` without writing bytecode into packages.
+The paired runtime runner now exercises actual Finance/Health installation and
+structured input; it also requires hledger and the Python packages above.
+
 Regenerate `catalog.json` deliberately with
 `python3 scripts/validate_catalog.py --write-catalog --no-self-test` when changing
 indexed manifest fields. Run skill self-tests separately with

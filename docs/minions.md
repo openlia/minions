@@ -24,8 +24,10 @@ through `openlia://minions/<slug>`. Document views link through
 
 Keep one authoritative location per dataset. An optional task app should read
 the existing `tasks/` records rather than silently copy them into a second store.
-Minions may own app-specific data, but must not silently move clinical records,
-ledgers, ingestion originals, or provenance into their private state.
+Minions may own canonical app data. Personal Finance and Personal Health keep
+their durable Markdown records and journals under `minions/<app>/data/`, shared
+with their skills, not duplicated in a second store. Ingestion originals remain
+in the Vault. Portable templates/schemas stay outside instance data, in `templates/`.
 
 ## Workflow discovery
 

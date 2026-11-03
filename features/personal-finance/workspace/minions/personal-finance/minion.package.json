@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "files": [
+    "README.md",
+    "dashboard.openui",
+    "input.openui",
+    "input.schema.json",
+    "config.schema.json",
+    "input.py",
+    "main.py",
+    "requirements.txt",
+    "overview.md",
+    "tests/test_main.py",
+    "templates/finance-template.md",
+    "templates/finance-template.schema.json",
+    "templates/accounts/accounts-template.md",
+    "templates/accounts/accounts-template.schema.json",
+    "templates/intake/intake-template.md",
+    "templates/intake/intake-template.schema.json",
+    "templates/portfolios/portfolios-template.md",
+    "templates/portfolios/portfolios-template.schema.json",
+    "templates/reviews/reviews-template.md",
+    "templates/reviews/reviews-template.schema.json"
+  ]
+}

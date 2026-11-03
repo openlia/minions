@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Person-scoped health record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["record_type", "person_id", "title"],
+  "properties": {
+    "record_type": {"type": "string", "enum": ["profile", "encounter", "condition", "treatment", "measurement"]},
+    "person_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"},
+    "title": {"type": "string", "minLength": 1, "maxLength": 200, "pattern": "^[^\\r\\n]+$"},
+    "relationship_to_user": {"type": "string", "enum": ["self", "child", "spouse", "partner", "parent", "sibling", "grandparent", "grandchild", "other-family", "caregiver", "other"]},
+    "event_date": {"type": "string", "maxLength": 40},
+    "source_type": {"type": "string", "enum": ["user-report", "clinician", "lab-report", "device", "prescription", "imported-record"], "default": "user-report"},
+    "source_ref": {"type": "string", "pattern": "^openlia://source/[^\\s]+$", "maxLength": 500},
+    "verification_status": {"type": "string", "enum": ["unconfirmed", "reported", "provisional", "confirmed", "refuted", "entered-in-error", "unknown"], "default": "reported"},
+    "condition_kind": {"type": "string", "enum": ["diagnosis", "allergy", "intolerance", "risk-factor", "family-history", "other"], "default": "other"},
+    "family_member_relation": {"type": "string", "minLength": 1, "maxLength": 200},
+    "clinical_status": {"type": "string", "enum": ["active", "recurrence", "relapse", "inactive", "remission", "resolved", "unknown"], "default": "unknown"},
+    "treatment_status": {"type": "string", "enum": ["planned", "active", "completed", "stopped", "on-hold", "not-taken", "unknown", "entered-in-error"], "default": "unknown"},
+    "treatment_kind": {"type": "string", "enum": ["medication", "therapy", "procedure", "lifestyle", "other"], "default": "other"},
+    "treatment_intent": {"type": "string", "enum": ["prescribed", "recommended", "reported-use", "self-directed", "completed", "unknown"], "default": "reported-use"},
+    "value": {"type": "string", "minLength": 1, "maxLength": 200},
+    "unit": {"type": "string", "minLength": 1, "maxLength": 100},
+    "notes": {"type": "string", "maxLength": 8000}
+  },
+  "allOf": [
+    {"if": {"properties": {"record_type": {"const": "profile"}}}, "then": {"required": ["relationship_to_user"]}},
+    {"if": {"properties": {"record_type": {"enum": ["encounter", "measurement"]}}}, "then": {"required": ["event_date"]}},
+    {"if": {"properties": {"record_type": {"const": "measurement"}}}, "then": {"required": ["value", "unit"]}}
+  ]
+}

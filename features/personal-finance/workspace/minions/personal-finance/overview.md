@@ -1,5 +1,5 @@
 ---
-$schema: ./finance-template.schema.json
+$schema: ./templates/finance-template.schema.json
 period: null
 review_date: null
 journal_path: null
@@ -14,7 +14,7 @@ No journal is shipped or silently initialized. Native hledger must be installed
 on the Workspace UI server.
 
 ```openui
-root = Finance([views])
+root = Finance(children: [views], dataPath: "minions/personal-finance/data")
 views = Tabs([
   TabItem("overview", "Overview", [FinanceOverview(), FinanceChart("income-expenses", "bar")]),
   TabItem("flows", "Flows", [FinanceChart("flows", "sankey")]),
@@ -46,6 +46,5 @@ targets from ledger balances.
 
 ## Recurring Subscriptions & Audits
 
-Keep periodic review documents in `reviews/`, using the
-[review template](./reviews/reviews-template.md). Browse them in Documents;
-the former manifest-backed Reviews table is no longer supported.
+Keep periodic review documents in `data/reviews/`, using the
+[review template](./templates/reviews/reviews-template.md). Browse them in Documents.

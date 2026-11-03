@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Finance preview or explicit confirmation",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "action": {"type": "string", "enum": ["preview", "confirm", "cancel"], "default": "preview"},
+    "date": {"type": "string", "format": "date"},
+    "description": {"type": "string", "minLength": 1, "maxLength": 200},
+    "amount": {"type": "string", "pattern": "^[0-9]+(?:\\.[0-9]{1,12})?$", "maxLength": 40},
+    "commodity": {"type": "string", "pattern": "^[A-Z][A-Z0-9]{0,11}$"},
+    "debit_account": {"type": "string", "minLength": 1, "maxLength": 200},
+    "credit_account": {"type": "string", "minLength": 1, "maxLength": 200},
+    "source_ref": {"type": "string", "pattern": "^openlia://source/[^\\s;]+$", "maxLength": 500},
+    "proposal_id": {"type": "string", "pattern": "^[a-f0-9]{32}$"},
+    "confirmation": {"type": "string", "enum": ["POST"]}
+  },
+  "allOf": [
+    {"if": {"properties": {"action": {"const": "preview"}}}, "then": {"required": ["date", "description", "amount", "commodity", "debit_account", "credit_account"]}},
+    {"if": {"required": ["action"], "properties": {"action": {"enum": ["confirm", "cancel"]}}}, "then": {"required": ["proposal_id"]}},
+    {"if": {"required": ["action"], "properties": {"action": {"const": "confirm"}}}, "then": {"required": ["confirmation"]}}
+  ]
+}
