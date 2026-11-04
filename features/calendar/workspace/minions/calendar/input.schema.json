@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Calendar appointment proposal",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "action": {"type": "string", "enum": ["preview", "confirm", "cancel"], "default": "preview"},
+    "title": {"type": "string", "minLength": 1, "maxLength": 200, "pattern": "^[^\\r\\n]+$"},
+    "start": {"type": "string", "format": "date-time"},
+    "end": {"type": "string", "format": "date-time"},
+    "timezone": {"type": "string", "minLength": 1, "maxLength": 100, "pattern": "^[A-Za-z0-9_+.-]+(?:/[A-Za-z0-9_+.-]+)*$"},
+    "agenda": {"type": "string", "maxLength": 8000},
+    "attendees": {"type": "string", "maxLength": 2000},
+    "location": {"type": "string", "maxLength": 500},
+    "video_link": {"type": "string", "format": "uri", "maxLength": 1000},
+    "tags": {"type": "string", "maxLength": 500},
+    "proposal_id": {"type": "string", "pattern": "^[a-f0-9]{32}$"},
+    "confirmation": {"type": "string", "enum": ["SAVE"]}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"action": {"const": "preview"}}},
+      "then": {"required": ["title", "start", "end", "timezone"]}
+    },
+    {
+      "if": {"required": ["action"], "properties": {"action": {"enum": ["confirm", "cancel"]}}},
+      "then": {"required": ["proposal_id"]}
+    },
+    {
+      "if": {"required": ["action"], "properties": {"action": {"const": "confirm"}}},
+      "then": {"required": ["confirmation"]}
+    }
+  ]
+}

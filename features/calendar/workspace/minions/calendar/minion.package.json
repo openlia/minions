@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "files": [
+    "README.md",
+    "dashboard.openui",
+    "input.openui",
+    "input.schema.json",
+    "config.schema.json",
+    "input.py",
+    "main.py",
+    "requirements.txt",
+    "overview.md",
+    "templates/event-note-template.md",
+    "templates/event-note-template.schema.json",
+    "templates/reminder-template.rem",
+    "tests/test_main.py"
+  ]
+}

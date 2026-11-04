@@ -38,7 +38,7 @@ user-owned delegation policy authorizes the scoped update.
   - **Base Starter Templates**:
     - `goals/goal-template.md`: high-level outcomes, rationale, and linked tasks.
     - `tasks/task-template.md`: concrete physical actions with priorities and context tags.
-    - `calendar/event-note-template.md`: event agendas, notes, and follow-up items.
+    - `minions/calendar/templates/event-note-template.md`: event agendas, notes, and follow-up items owned by the Calendar Minion.
     - `knowledge/claims/claim-template.md`: starter format for durable
       personal claims; create actual records in the same directory.
     - `inbox/daily-briefing/briefing-template.md`: dated morning briefing reports.
@@ -79,8 +79,10 @@ user-owned delegation policy authorizes the scoped update.
   location per dataset and preserve existing domain records. Local execution
   does not authorize external effects; verify schedule registration separately
   from a cron setting. Do not feed app internals or cached copies into generic
-  reviews. Publish intentional, source-linked Markdown reports outside
-  `minions/` for briefing/review workflows, respecting destination permissions.
+  reviews. Daily briefing may read only the Calendar Minion's canonical
+  `minions/calendar/data/reminders.rem` through native Remind; publish intentional,
+  source-linked Markdown reports outside `minions/` for other Minion briefing or
+  review workflows, respecting destination permissions.
 - Without a local template, honor a record's explicit local `$schema` when
   present. A record directive cannot override a local template's contract.
 - Authorization and validation are separate: report invalid content accurately,

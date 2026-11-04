@@ -79,6 +79,44 @@ class MinionDiscoveryTests(unittest.TestCase):
                     self.assertNotIn("INTERNAL_APP_RECORD", collected.stdout)
                     self.assertIn("Published workout review", collected.stdout)
 
+    def test_calendar_minion_is_read_through_native_remind_only(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            app = root / "minions/calendar"
+            data = app / "data"
+            data.mkdir(parents=True)
+            (app / "README.md").write_text(
+                "---\nname: Calendar\ndescription: Native Remind calendar\n---\n# Calendar\n"
+            )
+            (app / "main.py").write_text("raise RuntimeError('must not execute')\n")
+            (data / "reminders.rem").write_text("# Native source\n")
+            (data / "notes").mkdir()
+            (data / "notes/internal.md").write_text("# INTERNAL_NOTE\n")
+            fake_bin = root / "bin"
+            fake_bin.mkdir()
+            remind = fake_bin / "remind"
+            remind.write_text(
+                "#!/bin/sh\n"
+                "printf '%s' '[{\"caltype\":\"monthly\",\"entries\":[{\"date\":\"2026-11-02\",\"eventstart_in_tz\":\"2026-11-02T10:00\",\"eventduration\":60,\"body\":\"Native planning\",\"info\":{\"description\":\"Launch review\"}}]}]'\n"
+            )
+            remind.chmod(0o755)
+            environment = dict(os.environ)
+            environment["PATH"] = str(fake_bin) + os.pathsep + environment.get("PATH", "")
+            for path in (
+                ROOT / "skills/daily-briefing/scripts/build_briefing.py",
+                ROOT / "features/daily-briefing/skills/daily-briefing/scripts/build_briefing.py",
+            ):
+                with self.subTest(collector=path.relative_to(ROOT)):
+                    collected = subprocess.run(
+                        [sys.executable, str(path), "--collect", "--workspace-root", str(root),
+                         "--date", "2026-11-02"],
+                        capture_output=True, text=True, timeout=20, env=environment,
+                    )
+                    self.assertEqual(collected.returncode, 0, collected.stderr)
+                    self.assertIn("Native planning", collected.stdout)
+                    self.assertIn("minions/calendar/data/reminders.rem", collected.stdout)
+                    self.assertNotIn("INTERNAL_NOTE", collected.stdout)
+
     def test_invalid_ids_symlinks_and_dependencies_are_not_collections(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

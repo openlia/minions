@@ -1,0 +1,4 @@
+# OpenLia Calendar Minion Remind source
+# Native Remind remains the source of truth for recurrence, includes, and agenda evaluation.
+# New structured appointments are appended here after explicit SAVE confirmation.
+# Companion notes live under data/notes/ and are linked with Event-Note metadata.
