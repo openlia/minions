@@ -33,12 +33,12 @@ in the Vault. Portable templates/schemas stay outside instance data, in `templat
 
 Collection discovery identifies each Minion once, not its scripts, tests,
 dependency packages, schemas, or nested data folders as separate collections.
-Minions are excluded from generic briefing sources. Calendar is the deliberate
-exception: daily briefing reads only `minions/calendar/data/reminders.rem` through
-native Remind and never scans its code, tests, configuration, pending state, or
-cached data. Other Minions should publish an intentional, dated Markdown report
-outside `minions/`, following that destination's local template and permissions.
-Link the source Minion and canonical records; do not also count an app's cached copy.
+Minion data is excluded from generic briefing sources unless the app ships a
+reviewed `briefing.view.json`. That view may expose only bounded paths under the
+app's `data/` directory through approved read-only readers (`markdown` or native
+`remind`). The collector never scans code, tests, dependencies, configuration,
+pending state, or caches, and never executes an app. Link canonical records and
+do not also count an app's cached copy.
 Missing exports do not mean zero activity. Reading a report must never run code.
 
 ## Migrating old Mini-Projects
@@ -84,6 +84,11 @@ its distributable tree under `workspace/minions/<slug>/`. Do not select the whol
   ]
 }
 ```
+
+An app that intentionally contributes bounded canonical data to daily briefings
+may also list a reviewed `briefing.view.json`. Its sources must stay under the
+app's `data/` directory and use only the runtime's approved read-only readers;
+the view cannot select code, tests, configuration, pending state, or caches.
 
 The manifest is included implicitly. Use individual relative files, not globs.
 Include both schemas/views, one runtime and its input handler, and tests. List

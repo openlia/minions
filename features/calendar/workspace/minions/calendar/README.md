@@ -31,6 +31,13 @@ the source of truth; notes are supporting documents linked through `Event-Note:`
 Existing literal includes are preserved and validated with native Remind. Missing
 or invalid native evidence is reported, not treated as an empty calendar.
 
+## Briefing view
+
+`briefing.view.json` exposes only bounded upcoming events from `data/reminders.rem`
+through the native Remind reader. It does not expose notes, pending proposals,
+configuration, code, tests, or caches. The briefing reader applies the declared
+record, excerpt, file, and byte limits before adding source-linked events.
+
 ## Data and upgrades
 
 Portable templates live under `templates/`; `data/`, `config.json`, pending

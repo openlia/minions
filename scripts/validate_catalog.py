@@ -23,6 +23,7 @@ CATALOG_PATH = ROOT / "catalog.json"
 MINION_PACKAGE_FILE = "minion.package.json"
 MAX_MINION_FILE_BYTES = 10 * 1024 * 1024
 MINION_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+BRIEFING_CATEGORIES = {"calendar", "tasks", "goals", "decisions", "monitors", "claims", "finance", "inbox", "extension"}
 RESERVED_MINION_PARTS = {
     "config.json",
     "data",
@@ -200,6 +201,54 @@ def validate_minion_config_schema(schema: object) -> None:
     jsonschema.Draft202012Validator.check_schema(schema)
 
 
+def validate_minion_briefing_view(view: object) -> None:
+    if not isinstance(view, dict) or set(view) != {"schema", "limits", "sources"} or view.get("schema") != 1:
+        raise ValueError("briefing.view.json must declare schema: 1, limits, and sources")
+    limits = view["limits"]
+    if not isinstance(limits, dict) or set(limits) - {"max_records", "max_excerpt_chars", "max_files", "max_bytes"}:
+        raise ValueError("briefing.view.json limits contain unsupported fields")
+    bounds = {
+        "max_records": (1, 200),
+        "max_excerpt_chars": (40, 4000),
+        "max_files": (1, 128),
+        "max_bytes": (1024, 8 * 1024 * 1024),
+    }
+    for key, (minimum, maximum) in bounds.items():
+        value = limits.get(key)
+        if isinstance(value, bool) or not isinstance(value, int) or not minimum <= value <= maximum:
+            raise ValueError(f"briefing.view.json limits.{key} must be an integer from {minimum} to {maximum}")
+    sources = view["sources"]
+    if not isinstance(sources, list) or not sources or len(sources) > 8:
+        raise ValueError("briefing.view.json sources must contain 1 to 8 entries")
+    for source in sources:
+        if not isinstance(source, dict):
+            raise ValueError("briefing.view.json source must be an object")
+        required = {"path", "reader", "label", "category"}
+        if not required.issubset(source) or set(source) - required - {"lookahead_days", "max_records", "metadata_fields"}:
+            raise ValueError("briefing.view.json source has missing or unsupported fields")
+        path = source["path"]
+        parts = Path(path).parts if isinstance(path, str) else ()
+        if (
+            len(parts) < 2
+            or parts[0] != "data"
+            or any(not part or part in {".", ".."} or part.startswith(".") for part in parts)
+            or not re.fullmatch(r"[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*", str(path))
+        ):
+            raise ValueError("briefing.view.json source paths must be bounded under data/")
+        if source["reader"] not in {"markdown", "remind"}:
+            raise ValueError("briefing.view.json reader must be markdown or remind")
+        if not isinstance(source["label"], str) or not source["label"].strip():
+            raise ValueError("briefing.view.json source label must be non-empty")
+        if source["category"] not in BRIEFING_CATEGORIES:
+            raise ValueError("briefing.view.json source category is unsupported")
+        for key, minimum, maximum in (("lookahead_days", 0, 31), ("max_records", 1, limits["max_records"] or 1)):
+            if key in source and (isinstance(source[key], bool) or not isinstance(source[key], int) or not minimum <= source[key] <= maximum):
+                raise ValueError(f"briefing.view.json source {key} is out of bounds")
+        fields = source.get("metadata_fields", [])
+        if not isinstance(fields, list) or any(not isinstance(field, str) or not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]*", field) for field in fields):
+            raise ValueError("briefing.view.json metadata_fields must contain safe field names")
+
+
 def validate_minion_package_dir(minion_dir: Path, minion_id: str) -> list[str]:
     errors: list[str] = []
     label = f"minions/{minion_id}"
@@ -269,6 +318,13 @@ def validate_minion_package_dir(minion_dir: Path, minion_id: str) -> list[str]:
             validate_minion_config_schema(json.loads(config_schema_path.read_text(encoding="utf-8")))
         except Exception as exc:
             errors.append(f"{label}/config.schema.json: {exc}")
+
+    briefing_view_path = minion_dir / "briefing.view.json"
+    if "briefing.view.json" in seen and briefing_view_path.is_file() and not briefing_view_path.is_symlink():
+        try:
+            validate_minion_briefing_view(json.loads(briefing_view_path.read_text(encoding="utf-8")))
+        except Exception as exc:
+            errors.append(f"{label}/briefing.view.json: {exc}")
 
     for path in sorted(minion_dir.rglob("*")):
         rel = path.relative_to(minion_dir).as_posix()

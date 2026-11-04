@@ -24,12 +24,11 @@ actionable snapshot.
 The bundled registry helper discovers collections from folders, local templates,
 schemas, and Markdown records; `workspace.yaml` registration is not required.
 Read `/opt/data/permissions.yaml` for scheduled-work and consequential-action
-boundaries. Minions are discovered as apps, not generic briefing sources. The
-Calendar Minion is the explicit exception: read only
-`minions/calendar/data/reminders.rem` through native Remind, without executing
-the app or scanning its code, tests, dependencies, configuration, pending state,
-or cached data. For other Minions, read intentional, dated Markdown exports
-outside `minions/` when available.
+boundaries. Minions are discovered as apps, not generic briefing sources. A
+Minion may opt in through a reviewed `briefing.view.json` that declares bounded
+paths under its `data/` directory and an approved read-only reader. Never scan
+Minion code, tests, dependencies, configuration, pending state, or cached data;
+never execute an app merely to collect a briefing.
 
 ## Gather Sources
 
@@ -43,10 +42,10 @@ python scripts/build_briefing.py --collect \
 ```
 
 The collector prints a compact, read-only source packet using discovered entries
-whose `include_in_briefing` is true, including extension collections and the
-Calendar Minion's native event source. It uses structured dates and statuses
-where available, includes active records and recent open loops, and reports
-missing source directories separately from directories with no matching records.
+whose `include_in_briefing` is true, plus explicitly declared Minion briefing
+views. It uses structured dates and statuses where available, includes active
+records and recent open loops, and reports missing source directories separately
+from directories with no matching records.
 By default it includes calendar and due-date items through the next seven days,
 recent decisions and inbox captures, and up to 40 source records within an
 18,000-character packet.

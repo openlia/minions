@@ -1,6 +1,7 @@
 """Exercise distributed workflow helpers without running any Minion code."""
 
 import importlib.util
+import json
 import os
 import subprocess
 import sys
@@ -88,6 +89,20 @@ class MinionDiscoveryTests(unittest.TestCase):
             (app / "README.md").write_text(
                 "---\nname: Calendar\ndescription: Native Remind calendar\n---\n# Calendar\n"
             )
+            (app / "briefing.view.json").write_text(
+                json.dumps({
+                    "schema": 1,
+                    "limits": {"max_records": 10, "max_excerpt_chars": 120, "max_files": 4, "max_bytes": 4096},
+                    "sources": [{
+                        "path": "data/reminders.rem",
+                        "reader": "remind",
+                        "label": "Calendar",
+                        "category": "calendar",
+                        "lookahead_days": 7,
+                        "metadata_fields": ["starts_at", "date", "duration", "status"]
+                    }]
+                })
+            )
             (app / "main.py").write_text("raise RuntimeError('must not execute')\n")
             (data / "reminders.rem").write_text("# Native source\n")
             (data / "notes").mkdir()
@@ -116,6 +131,41 @@ class MinionDiscoveryTests(unittest.TestCase):
                     self.assertIn("Native planning", collected.stdout)
                     self.assertIn("minions/calendar/data/reminders.rem", collected.stdout)
                     self.assertNotIn("INTERNAL_NOTE", collected.stdout)
+
+    def test_minion_briefing_view_bounds_declared_markdown_data(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            app = root / "minions/notes-app"
+            records = app / "data/reports"
+            records.mkdir(parents=True)
+            (app / "README.md").write_text("---\nname: Notes App\ndescription: Notes\n---\n# Notes\n")
+            (app / "main.py").write_text("raise RuntimeError('must not execute')\n")
+            (app / "briefing.view.json").write_text(json.dumps({
+                "schema": 1,
+                    "limits": {"max_records": 1, "max_excerpt_chars": 40, "max_files": 1, "max_bytes": 4096},
+                "sources": [{"path": "data/reports", "reader": "markdown", "label": "Notes", "category": "calendar"}],
+            }))
+            (records / "first.md").write_text(
+                "---\nstarts_at: 2026-11-02T09:00:00Z\n---\n# First note\nIncluded content that is deliberately long.\n"
+            )
+            (records / "second.md").write_text(
+                "---\nstarts_at: 2026-11-02T10:00:00Z\n---\n# Second note\nShould be bounded out.\n"
+            )
+            (app / "data/private.md").write_text("# INTERNAL_APP_DATA\n")
+            for path in (
+                ROOT / "skills/daily-briefing/scripts/build_briefing.py",
+                ROOT / "features/daily-briefing/skills/daily-briefing/scripts/build_briefing.py",
+            ):
+                with self.subTest(collector=path.relative_to(ROOT)):
+                    collected = subprocess.run(
+                        [sys.executable, str(path), "--collect", "--workspace-root", str(root),
+                         "--date", "2026-11-02"],
+                        capture_output=True, text=True, timeout=20,
+                    )
+                    self.assertEqual(collected.returncode, 0, collected.stderr)
+                    self.assertIn("First note", collected.stdout)
+                    self.assertNotIn("Second note", collected.stdout)
+                    self.assertNotIn("INTERNAL_APP_DATA", collected.stdout)
 
     def test_invalid_ids_symlinks_and_dependencies_are_not_collections(self):
         with tempfile.TemporaryDirectory() as directory:

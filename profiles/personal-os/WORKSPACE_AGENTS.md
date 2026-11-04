@@ -79,10 +79,10 @@ user-owned delegation policy authorizes the scoped update.
   location per dataset and preserve existing domain records. Local execution
   does not authorize external effects; verify schedule registration separately
   from a cron setting. Do not feed app internals or cached copies into generic
-  reviews. Daily briefing may read only the Calendar Minion's canonical
-  `minions/calendar/data/reminders.rem` through native Remind; publish intentional,
-  source-linked Markdown reports outside `minions/` for other Minion briefing or
-  review workflows, respecting destination permissions.
+  reviews. Daily briefing may read only bounded paths declared by a Minion's
+  reviewed `briefing.view.json`, using approved read-only readers and preserving
+  source links. Minions without a briefing view remain excluded from generic
+  briefing and review workflows.
 - Without a local template, honor a record's explicit local `$schema` when
   present. A record directive cannot override a local template's contract.
 - Authorization and validation are separate: report invalid content accurately,
