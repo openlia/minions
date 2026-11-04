@@ -53,11 +53,11 @@
     {
       "id": "calendar",
       "name": "Calendar & Remind Scheduling",
-      "version": "0.3.0",
-      "description": "Remind-backed appointments with OpenUI month, week, and event-duration timeline views, plus companion event notes.",
+      "version": "0.4.0",
+      "description": "Calendar Minion with native Remind appointments, confirmed local entry, month/week/timeline views, and companion event notes.",
       "path": "features/calendar",
       "domains": [
-        "calendar"
+        "minions/calendar"
       ],
       "skills": [
         "calendar"
@@ -338,7 +338,7 @@
     {
       "id": "calendar",
       "name": "calendar",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "description": "Manage calendar events, agendas, reminders, and recurring schedules by authoring Remind entries directly with the LLM.",
       "path": "skills/calendar",
       "requires": {}

@@ -82,8 +82,10 @@ installation may contain only starter data.
   Markdown when a view adds no value. The Python validator is syntax-only;
   schema validation does not prove that a view renders correctly.
 - Briefing and review workflows must not scan Minion code, tests, dependencies,
-  or cached data as domain records. Read intentional Markdown reports published
-  outside `minions/`, preserve source links, and avoid counting duplicate copies.
+  or cached data as domain records. Calendar is the explicit exception: daily
+  briefing reads only `minions/calendar/data/reminders.rem` through native Remind.
+  For other Minions, read intentional Markdown reports published outside
+  `minions/`, preserve source links, and avoid counting duplicate copies.
 
 Credentials belong in Hermes' runtime secret source or environment, never in
 this profile, the workspace template, prompts, helper input, or reports. The

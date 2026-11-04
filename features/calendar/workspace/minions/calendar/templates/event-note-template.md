@@ -1,9 +1,9 @@
 ---
 $schema: ./event-note-template.schema.json
-starts_at: null # ISO-8601 date-time, e.g. 2026-08-12T09:00:00Z
+starts_at: null
 location: null
 video_link: null
-attendees: [] # e.g. ["[[Person Name]]"]
+attendees: []
 ---
 
 # <Event Title>
@@ -13,7 +13,7 @@ attendees: [] # e.g. ["[[Person Name]]"]
 - Agenda topics:
 
 ## Discussion & Raw Notes
-- 
+-
 
 ## Follow-up Action Items
 - [ ] Next action:

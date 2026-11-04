@@ -37,24 +37,15 @@ class InlineViewTests(unittest.TestCase):
             self.assertIn("minion-authoring", text)
             self.assertIn("openui_validate", text)
 
-    def test_native_views_are_markdown_not_mini_projects(self):
-        for feature, folder, component, template in (
-            ("calendar", "calendar", "Calendar", "event-note-template.md"),
-        ):
-            with self.subTest(feature=feature):
-                root = ROOT / "features" / feature / "workspace" / folder
-                view = (root / "overview.md").read_text()
-                metadata, body = parse_frontmatter(view)
-                template_metadata, template_body = parse_frontmatter((root / template).read_text())
-                self.assertEqual(metadata, template_metadata)
-                self.assertIn(f"```openui\nroot = {component}([views])", body)
-                self.assertNotIn("RecordTable(", body)
-                self.assertFalse((root / "ui.openui").exists())
-                self.assertFalse((root / "project-manifest.toml").exists())
-                # Overview documents honor their folder-local record contracts.
-                for line in template_body.splitlines():
-                    if line.startswith("## "):
-                        self.assertIn(line, body)
+    def test_calendar_minion_keeps_its_inline_view_outside_instance_data(self):
+        root = ROOT / "features/calendar/workspace/minions/calendar"
+        view = (root / "overview.md").read_text()
+        metadata, body = parse_frontmatter(view)
+        self.assertEqual(metadata["name"], "Calendar")
+        self.assertIn("```openui\nroot = Calendar([views])", body)
+        self.assertNotIn("RecordTable(", body)
+        self.assertTrue((root / "minion.package.json").is_file())
+        self.assertFalse((root / "data").exists())
 
     def test_finance_app_keeps_its_inline_view_outside_instance_data(self):
         root = ROOT / "features/personal-finance/workspace/minions/personal-finance"

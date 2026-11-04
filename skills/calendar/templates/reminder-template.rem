@@ -14,7 +14,7 @@
 #   INFO "Map-Url: https://maps.google.com/?q=..."
 #   INFO "Video-Link: https://meet.google.com/... or https://zoom.us/..."
 #   INFO "Description: Agenda, background, or meeting context"
-#   INFO "Event-Note: calendar/YYYY-MM-DD-event-title.md"
+#   INFO "Event-Note: openlia://workspace/minions/calendar/data/notes/YYYY-MM-DD-event-title.md"
 
 # Example 1: In-person meeting with physical location and Google Maps link
 # REM 2026-10-15 AT 10:00 DURATION 1:00 \
@@ -23,7 +23,7 @@
 #     INFO "Map-Url: https://maps.google.com/?q=123+Market+St+San+Francisco+CA" \
 #     INFO "Attendees: Alice Smith <alice@example.com>, openlia://workspace/people/bob-jones.md" \
 #     INFO "Description: Quarterly client sync and roadmap review" \
-#     INFO "Event-Note: calendar/2026-10-15-client-review.md" \
+#     INFO "Event-Note: openlia://workspace/minions/calendar/data/notes/2026-10-15-client-review.md" \
 #     MSG Client Roadmap Review
 
 # Example 2: Remote video conference with Google Meet / Zoom link
@@ -46,4 +46,3 @@
 #     TAG holiday TAG school TAG lina \
 #     INFO "Description: Lina — Nghỉ giữa học kỳ I" \
 #     MSG Lina — Nghỉ giữa học kỳ I
-

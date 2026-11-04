@@ -20,7 +20,7 @@ openlia/minions
 │       └── WORKSPACE_AGENTS.md
 ├── features/                # Modular domain packages (workspace templates + schemas + OpenUI + Minions + skills)
 │   ├── areas/
-│   ├── calendar/            # requires.tools: ["remind"]
+│   ├── calendar/            # Calendar Minion; requires.tools: ["remind"]
 │   ├── claims/
 │   ├── daily-briefing/
 │   ├── decision-analysis/
