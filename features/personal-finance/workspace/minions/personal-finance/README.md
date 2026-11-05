@@ -31,8 +31,11 @@ and credit accounts. Transfers use two asset accounts; card repayments reduce
 liabilities rather than creating another expense. Split transactions, investments,
 and ambiguous classifications remain workflows for the Finance skill.
 
-Submission creates a pending proposal only. Open Dashboard, inspect the exact
-posting and main journal, select its proposal ID and **confirm**, and type `POST`.
+Submission creates a pending proposal only. Open Dashboard, find the review card
+for that exact proposal ID, inspect its posting and main journal, explicitly choose
+**Confirm posting**, and type `POST`. Review cards appear before ledger reports.
+Each card has independent form state; its proposal ID is prefilled, never inferred
+from another card. Choosing **Cancel proposal** with blank confirmation never posts.
 Only that second submission authorizes a local ledger write. Native hledger checks
 the baseline and proposed complete include tree. A changed journal requires a new
 preview. Repeated confirmations cannot post twice. Cancelling never changes the

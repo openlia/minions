@@ -179,18 +179,21 @@ def save_intake(proposal: dict, *, dry_run: bool = False):
 
 def render_dashboard():
     journal = json.dumps(load_config()["journal"])
-    children = [f'Finance(children: [FinanceOverview(), FinanceChart(report: "income-expenses", kind: "bar"), FinanceChart(report: "balances", kind: "line"), FinanceAccounts()], journal: {journal}, dataPath: "minions/personal-finance/data")']
+    children = []
     for proposal in proposals():
         if proposal["status"] != "pending":
             continue
         identifier = proposal["id"]
-        description = f"Main journal: data/{proposal['journal']}\n{proposal['posting']}\nConfirm only this exact posting. Not reconciled."
-        children.append(f'Callout(variant: "info", title: "Pending posting", description: {json.dumps(description)})')
-        children.append('Form(name: "minionInput", fields: ['
-                        'FormControl(label: "Action", input: Select(name: "action", items: [SelectItem(value: "confirm", label: "Confirm posting"), SelectItem(value: "cancel", label: "Cancel proposal")])), '
-                        f'FormControl(label: "Proposal", input: Select(name: "proposal_id", items: [SelectItem(value: "{identifier}", label: "{identifier}")])), '
+        description = f"Main journal: data/{proposal['journal']}\n\n```hledger\n{proposal['posting']}\n```\nConfirm only this exact posting. Not reconciled."
+        children.append('Card(children: ['
+                        f'CardHeader(title: "Pending posting {identifier}"), '
+                        f'Callout(variant: "info", title: "Exact local posting", description: {json.dumps(description)}), '
+                        f'Form(name: "finance-proposal-{identifier}", fields: ['
+                        'FormControl(label: "Action", input: RadioGroup(name: "action", rules: {required: true}, items: [RadioItem(value: "confirm", label: "Confirm posting", description: "Requires POST below; writes only this exact local posting."), RadioItem(value: "cancel", label: "Cancel proposal", description: "Leaves the journal unchanged.")])), '
+                        f'FormControl(label: "Proposal", input: Select(name: "proposal_id", value: "{identifier}", items: [SelectItem(value: "{identifier}", label: "{identifier}")])), '
                         'FormControl(label: "Type POST to authorize (leave blank to cancel)", input: Input(name: "confirmation"))'
-                        '], buttons: Buttons(buttons: [Button(label: "Apply selected action", variant: "primary")]))')
+                        '], buttons: Buttons(buttons: [Button(label: "Apply selected action", variant: "primary")]))])')
+    children.append(f'Finance(children: [FinanceOverview(), FinanceChart(report: "income-expenses", kind: "bar"), FinanceChart(report: "balances", kind: "line"), FinanceAccounts()], journal: {journal}, dataPath: "minions/personal-finance/data")')
     rows = [{"id": p["id"], "status": p["status"], "date": p["payload"]["date"], "description": p["payload"]["description"]} for p in proposals()]
     children.append(f'Table(title: "Intake", columns: [{{"key": "date", "label": "Date"}}, {{"key": "description", "label": "Description"}}, {{"key": "status", "label": "Status"}}], rows: {json.dumps(rows)})')
     content = "Stack(children: [\n" + ",\n".join(children) + "\n])\n"
