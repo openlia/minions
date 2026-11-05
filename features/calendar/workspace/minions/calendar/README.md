@@ -31,6 +31,14 @@ the source of truth; notes are supporting documents linked through `Event-Note:`
 Existing literal includes are preserved and validated with native Remind. Missing
 or invalid native evidence is reported, not treated as an empty calendar.
 
+## Briefing view
+
+`data.views.json` declares the `agenda` view over `data/reminders.rem`, using the
+runtime's Calendar service. Dashboard source, Hermes queries, and briefing queries
+read the same canonical calendar. It does not expose companion notes or proposals.
+Briefing is off until Configuration includes `"data_views": {"briefing": ["agenda"],
+"scopes": {}}`. A missing native dependency is reported as unavailable.
+
 ## Data and upgrades
 
 Portable templates live under `templates/`; `data/`, `config.json`, pending

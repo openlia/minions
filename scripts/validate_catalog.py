@@ -200,6 +200,43 @@ def validate_minion_config_schema(schema: object) -> None:
     jsonschema.Draft202012Validator.check_schema(schema)
 
 
+def validate_minion_data_views(document: object) -> None:
+    """Portable preflight only; paired runtime validates the authoritative contract."""
+    if not isinstance(document, dict) or set(document) != {"schema", "views"} or type(document["schema"]) is not int or document["schema"] != 1:
+        raise ValueError("data.views.json requires schema: 1 and views")
+    views = document["views"]
+    if not isinstance(views, list) or len(views) > 8:
+        raise ValueError("data.views.json permits at most eight views")
+    seen = set()
+    for view in views:
+        required = {"id", "label", "reader", "path", "fields", "title_field", "date_field"}
+        optional = {"id_field", "required_filters", "max_records", "max_files", "max_bytes", "max_field_chars", "lookback_days"}
+        if not isinstance(view, dict) or not required.issubset(view) or set(view) - required - optional:
+            raise ValueError("data view has missing or unsupported properties")
+        if not isinstance(view["id"], str) or not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,63}", view["id"]) or view["id"] in seen:
+            raise ValueError("Invalid or duplicate data view id")
+        seen.add(view["id"])
+        if not isinstance(view["label"], str) or not 1 <= len(view["label"]) <= 100 or view["reader"] not in {"markdown", "json", "calendar"}:
+            raise ValueError("Invalid view label or reader")
+        if not isinstance(view["path"], str) or not re.fullmatch(r"data/[A-Za-z0-9_-][A-Za-z0-9_.-]*(?:/[A-Za-z0-9_-][A-Za-z0-9_.-]*)*", view["path"]):
+            raise ValueError("Data view must select a bounded data/ path")
+        blocked = {"pending", "cache", "caches", "state", "logs", "uploads", "node_modules", "tests", "scripts", "__pycache__", "config.json", "context.json", "data.views.json", "secrets.json", "credentials.json"}
+        if any(part.lower() in blocked for part in view["path"].split("/")):
+            raise ValueError("Data view cannot select app internals")
+        fields = view["fields"]
+        if not isinstance(fields, list) or not 1 <= len(fields) <= 32 or any(not isinstance(field, str) or not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]{0,63}", field) for field in fields):
+            raise ValueError("Invalid view fields")
+        required_filters = view.get("required_filters", [])
+        if not isinstance(required_filters, list) or len(required_filters) > 8:
+            raise ValueError("Invalid required filters")
+        for name in [view["title_field"], view["date_field"], *required_filters, *([view["id_field"]] if "id_field" in view else [])]:
+            if name not in fields:
+                raise ValueError("View identity/date/scope must be declared fields")
+        for key, low, high in [("max_records", 1, 100), ("max_files", 1, 200), ("max_bytes", 1024, 4194304), ("max_field_chars", 40, 1000), ("lookback_days", 0, 14)]:
+            if key in view and (type(view[key]) is not int or not low <= view[key] <= high):
+                raise ValueError(f"Invalid {key}")
+
+
 def validate_minion_package_dir(minion_dir: Path, minion_id: str) -> list[str]:
     errors: list[str] = []
     label = f"minions/{minion_id}"
@@ -269,6 +306,13 @@ def validate_minion_package_dir(minion_dir: Path, minion_id: str) -> list[str]:
             validate_minion_config_schema(json.loads(config_schema_path.read_text(encoding="utf-8")))
         except Exception as exc:
             errors.append(f"{label}/config.schema.json: {exc}")
+
+    briefing_view_path = minion_dir / "data.views.json"
+    if "data.views.json" in seen and briefing_view_path.is_file() and not briefing_view_path.is_symlink():
+        try:
+            validate_minion_data_views(json.loads(briefing_view_path.read_text(encoding="utf-8")))
+        except Exception as exc:
+            errors.append(f"{label}/data.views.json: {exc}")
 
     for path in sorted(minion_dir.rglob("*")):
         rel = path.relative_to(minion_dir).as_posix()

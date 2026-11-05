@@ -42,7 +42,7 @@ class InlineViewTests(unittest.TestCase):
         view = (root / "overview.md").read_text()
         metadata, body = parse_frontmatter(view)
         self.assertEqual(metadata["name"], "Calendar")
-        self.assertIn("```openui\nroot = Calendar([views])", body)
+        self.assertIn('```openui\nroot = Calendar(children: [views], source: "data/reminders.rem")', body)
         self.assertNotIn("RecordTable(", body)
         self.assertTrue((root / "minion.package.json").is_file())
         self.assertFalse((root / "data").exists())

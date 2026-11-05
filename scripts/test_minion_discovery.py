@@ -1,6 +1,7 @@
 """Exercise distributed workflow helpers without running any Minion code."""
 
 import importlib.util
+import json
 import os
 import subprocess
 import sys
@@ -79,43 +80,23 @@ class MinionDiscoveryTests(unittest.TestCase):
                     self.assertNotIn("INTERNAL_APP_RECORD", collected.stdout)
                     self.assertIn("Published workout review", collected.stdout)
 
-    def test_calendar_minion_is_read_through_native_remind_only(self):
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            app = root / "minions/calendar"
-            data = app / "data"
-            data.mkdir(parents=True)
-            (app / "README.md").write_text(
-                "---\nname: Calendar\ndescription: Native Remind calendar\n---\n# Calendar\n"
-            )
-            (app / "main.py").write_text("raise RuntimeError('must not execute')\n")
-            (data / "reminders.rem").write_text("# Native source\n")
-            (data / "notes").mkdir()
-            (data / "notes/internal.md").write_text("# INTERNAL_NOTE\n")
-            fake_bin = root / "bin"
-            fake_bin.mkdir()
-            remind = fake_bin / "remind"
-            remind.write_text(
-                "#!/bin/sh\n"
-                "printf '%s' '[{\"caltype\":\"monthly\",\"entries\":[{\"date\":\"2026-11-02\",\"eventstart_in_tz\":\"2026-11-02T10:00\",\"eventduration\":60,\"body\":\"Native planning\",\"info\":{\"description\":\"Launch review\"}}]}]'\n"
-            )
-            remind.chmod(0o755)
-            environment = dict(os.environ)
-            environment["PATH"] = str(fake_bin) + os.pathsep + environment.get("PATH", "")
-            for path in (
-                ROOT / "skills/daily-briefing/scripts/build_briefing.py",
-                ROOT / "features/daily-briefing/skills/daily-briefing/scripts/build_briefing.py",
-            ):
-                with self.subTest(collector=path.relative_to(ROOT)):
-                    collected = subprocess.run(
-                        [sys.executable, str(path), "--collect", "--workspace-root", str(root),
-                         "--date", "2026-11-02"],
-                        capture_output=True, text=True, timeout=20, env=environment,
-                    )
-                    self.assertEqual(collected.returncode, 0, collected.stderr)
-                    self.assertIn("Native planning", collected.stdout)
-                    self.assertIn("minions/calendar/data/reminders.rem", collected.stdout)
-                    self.assertNotIn("INTERNAL_NOTE", collected.stdout)
+    def test_minion_views_use_runtime_and_never_fallback_to_app_files(self):
+        from datetime import date
+        for path in (ROOT / "skills/daily-briefing/scripts/minion_views.py", ROOT / "features/daily-briefing/skills/daily-briefing/scripts/minion_views.py"):
+            spec = importlib.util.spec_from_file_location("view_bridge", path)
+            bridge = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(bridge)
+            with patch.object(bridge, "runtime_request", side_effect=[
+                {"status": "ok", "minions": [{"id": "calendar", "status": "ok", "views": [{"id": "agenda", "briefing_enabled": True}]}]},
+                {"status": "ok", "observed_at": "2026-11-02T00:00:00Z", "revision": "sha256:test", "records": [{"id": "event", "title": "Planning", "source": "openlia://workspace/minions/calendar/data/reminders.rem"}], "truncated": True},
+            ]) as request:
+                result = "\n".join(bridge.collect_minion_views(Path("/missing-workspace"), date(2026, 11, 2), 7, 8))
+                self.assertIn("Planning", result)
+                self.assertIn("omitted", result)
+                self.assertEqual(request.call_args_list[1].args[1]["query"]["purpose"], "briefing")
+            with patch.object(bridge, "runtime_request", return_value={"status": "unavailable"}):
+                result = "\n".join(bridge.collect_minion_views(Path("/missing-workspace"), date(2026, 11, 2), 7, 8))
+                self.assertIn("does not mean zero activity", result)
 
     def test_invalid_ids_symlinks_and_dependencies_are_not_collections(self):
         with tempfile.TemporaryDirectory() as directory:

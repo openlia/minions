@@ -1,7 +1,7 @@
 schema: 1
 id: gym-tracker
 name: Gym & Workout Tracker
-version: 0.1.0
+version: 0.1.1
 description: Programmable workout tracker Minion for logging sets, progressive overload, and weekly volume.
 author: OpenLia maintainers
 license: MIT

@@ -27,6 +27,7 @@ for SYSTEM_SCRIPTS in SYSTEM_SCRIPTS_CANDIDATES:
         break
 
 from workspace_registry import briefing_sources, load_registry
+from minion_views import collect_minion_views
 
 
 MAX_SOURCE_READ = 16 * 1024
@@ -45,7 +46,6 @@ SOURCE_DIRECTORIES = (
     ("knowledge/claims", "Claims", "claims"),
     ("inbox", "Inbox", "inbox"),
 )
-CALENDAR_MINION_DATA = "minions/calendar/data"
 TERMINAL_TASK_STATUSES = {"done", "completed", "cancelled", "canceled", "archived"}
 INACTIVE_RECORD_STATUSES = {"paused", "completed", "abandoned", "archived", "retired", "superseded", "rejected", "retracted"}
 
@@ -53,18 +53,11 @@ INACTIVE_RECORD_STATUSES = {"paused", "completed", "abandoned", "archived", "ret
 def _source_directories(workspace: Path) -> tuple[tuple[str, str, str], ...]:
     registry = load_registry(workspace)
     if registry is None:
-        sources = SOURCE_DIRECTORIES
-    else:
-        sources = tuple(
-            (source["path"], source["heading"], source["category"])
-            for source in briefing_sources(registry)
-        )
-    # Calendar is the one intentional Minion exception: read only its canonical
-    # native Remind data, never app code, tests, config, or cached state.
-    if (workspace / "minions/calendar").is_dir():
-        sources = tuple(source for source in sources if source[0] != "calendar")
-        sources += ((CALENDAR_MINION_DATA, "Calendar", "calendar"),)
-    return sources
+        return SOURCE_DIRECTORIES
+    return tuple(
+        (source["path"], source["heading"], source["category"])
+        for source in briefing_sources(registry)
+    )
 
 
 def _parse_iso_date(value: str) -> date:
@@ -211,127 +204,6 @@ def _source_files(directory: Path, workspace: Path) -> list[Path]:
                 continue
             paths.append(path)
     return paths
-
-
-def _remind_entries(payload: Any) -> list[dict[str, Any]]:
-    if isinstance(payload, dict):
-        nested = payload.get("entries")
-        if isinstance(nested, list):
-            return _remind_entries(nested)
-        if "date" in payload and any(key in payload for key in ("body", "plain_body", "summary", "text", "title")):
-            return [payload]
-        return []
-    if isinstance(payload, list):
-        entries = []
-        for item in payload:
-            entries.extend(_remind_entries(item))
-        return entries
-    return []
-
-
-def _remind_info(entry: dict[str, Any]) -> dict[str, str]:
-    raw = entry.get("info") or entry.get("INFO") or {}
-    if isinstance(raw, dict):
-        return {str(key).casefold().replace("_", "-"): str(value) for key, value in raw.items()}
-    if isinstance(raw, list):
-        result = {}
-        for item in raw:
-            if not isinstance(item, str) or ":" not in item:
-                continue
-            key, value = item.split(":", 1)
-            result[key.strip().casefold().replace("_", "-")] = value.strip()
-        return result
-    return {}
-
-
-def _read_calendar_minion(
-    directory: Path,
-    workspace: Path,
-    briefing_date: date,
-    lookahead_days: int,
-) -> tuple[list[dict[str, Any]], str]:
-    """Read Calendar Minion events through native Remind's JSON mode."""
-    primary = directory / "reminders.rem"
-    if not directory.is_dir():
-        return [], "source directory missing"
-    if not primary.is_file() or primary.is_symlink():
-        return [], "native Remind source missing"
-    try:
-        modified = date.fromtimestamp(primary.stat().st_mtime)
-    except OSError:
-        modified = briefing_date
-    records: list[dict[str, Any]] = []
-    seen: set[tuple[str, str, str]] = set()
-    for offset in range(lookahead_days + 1):
-        requested = briefing_date + timedelta(days=offset)
-        try:
-            result = subprocess.run(
-                ["remind", "-r", "-q", "-ppp", "reminders.rem", requested.isoformat()],
-                cwd=directory,
-                capture_output=True,
-                text=True,
-                timeout=15,
-                check=False,
-            )
-        except (OSError, subprocess.TimeoutExpired) as exc:
-            return records, f"native Remind unavailable ({type(exc).__name__})"
-        if result.returncode != 0 or result.stderr.strip():
-            detail = result.stderr.strip() or result.stdout.strip() or "unknown native Remind error"
-            return records, f"native Remind error: {detail[:160]}"
-        try:
-            payload = json.loads(result.stdout or "{}")
-        except json.JSONDecodeError:
-            return records, "native Remind returned invalid JSON"
-        for index, entry in enumerate(_remind_entries(payload)):
-            raw_date = entry.get("date") or entry.get("start_date") or entry.get("start")
-            event_date = _date_value(raw_date) if raw_date is not None else requested
-            if event_date != requested:
-                continue
-            info = _remind_info(entry)
-            title = str(
-                entry.get("body")
-                or entry.get("plain_body")
-                or entry.get("summary")
-                or entry.get("text")
-                or entry.get("msg")
-                or entry.get("title")
-                or "Untitled event"
-            ).strip()
-            raw_start = entry.get("eventstart_in_tz") or entry.get("eventstart") or entry.get("start_time") or entry.get("start")
-            start = str(raw_start or "").strip()
-            if not start and entry.get("time_in_tz", entry.get("time")) is not None:
-                try:
-                    minutes = int(entry.get("time_in_tz", entry.get("time")))
-                    start = f"{minutes // 60:02d}:{minutes % 60:02d}"
-                except (TypeError, ValueError):
-                    start = ""
-            duration = str(entry.get("eventduration") or entry.get("duration") or "").strip()
-            key = (event_date.isoformat(), start, title)
-            if key in seen:
-                continue
-            seen.add(key)
-            if re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?", start):
-                starts_at = start
-            else:
-                starts_at = event_date.isoformat() + (f"T{start}" if re.fullmatch(r"\d{2}:\d{2}(?::\d{2})?", start) else "")
-            excerpt = info.get("description") or info.get("agenda") or ""
-            source = f"{CALENDAR_MINION_DATA}/reminders.rem#{event_date.isoformat()}-{index}"
-            records.append(
-                {
-                    "path": source,
-                    "title": title,
-                    "metadata": {
-                        "starts_at": starts_at,
-                        "date": event_date.isoformat(),
-                        "duration": duration,
-                        "status": "scheduled",
-                        "location": info.get("location"),
-                    },
-                    "excerpt": excerpt[:DEFAULT_EXCERPT_CHARS],
-                    "modified": modified,
-                }
-            )
-    return records, f"{len(records)} native event(s)"
 
 
 def _within_workspace(path: Path, workspace: Path) -> bool:
@@ -627,35 +499,6 @@ def collect_sources(
     scanned_count = 0
     for relative_dir, heading, category in source_directories:
         directory = workspace / relative_dir
-        if relative_dir == CALENDAR_MINION_DATA:
-            native_records, native_status = _read_calendar_minion(
-                directory, workspace, briefing_date, lookahead_days
-            )
-            scanned_count += len(native_records)
-            records = []
-            for record in native_records:
-                candidate = _record_candidate(
-                    record,
-                    category,
-                    briefing_date,
-                    lookahead_days,
-                    recent_days,
-                    changed_paths,
-                )
-                if candidate is not None:
-                    score, reason = candidate
-                    records.append((score, record, reason))
-            records.sort(
-                key=lambda item: (
-                    -item[0],
-                    str(item[1]["metadata"].get("starts_at") or "9999"),
-                    item[1]["title"].casefold(),
-                    item[1]["path"],
-                )
-            )
-            candidates_by_source[relative_dir] = records
-            status_by_source[relative_dir] = native_status
-            continue
         if not directory.is_dir():
             status_by_source[relative_dir] = "source directory missing"
             candidates_by_source[relative_dir] = []
@@ -770,6 +613,9 @@ def collect_sources(
     else:
         git_block.append("- No local Git history available; use source mtimes and dates as context.")
     blocks.extend((block, False) for block in git_block)
+
+    minion_blocks = collect_minion_views(workspace, briefing_date, lookahead_days, max_per_section, max(0, max_docs - selected_count))
+    blocks.extend((block, False) for block in minion_blocks)
 
     body_blocks: list[tuple[str, bool]] = []
     candidates_in_packet = 0

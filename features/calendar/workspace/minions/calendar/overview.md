@@ -10,7 +10,7 @@ source is `minions/calendar/data/reminders.rem`; companion notes are optional
 Markdown documents under `minions/calendar/data/notes/`.
 
 ```openui
-root = Calendar([views])
+root = Calendar(children: [views], source: "data/reminders.rem")
 views = Tabs([
   TabItem("month", "Month", [CalendarMonth()]),
   TabItem("week", "Week", [CalendarWeek()]),
