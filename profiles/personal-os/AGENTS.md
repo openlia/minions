@@ -83,9 +83,10 @@ installation may contain only starter data.
   schema validation does not prove that a view renders correctly.
 - Briefing and review workflows must not scan Minion code, tests, dependencies,
   configuration, pending state, or cached data as domain records. Read only
-  bounded paths declared by a Minion's reviewed `briefing.view.json`, using its
-  approved read-only reader and preserving canonical source links. Minions
-  without a briefing view remain excluded; avoid counting duplicate copies.
+  named views declared in `data.views.json` through `minion_describe` and
+  `minion_query`, preserving canonical source links. Scheduled reads require
+  local `data_views.briefing` opt-in and explicit subject scope where required.
+  Never run app code as a read fallback; avoid counting duplicate copies.
 
 Credentials belong in Hermes' runtime secret source or environment, never in
 this profile, the workspace template, prompts, helper input, or reports. The

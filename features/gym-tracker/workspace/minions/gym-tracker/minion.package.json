@@ -1,6 +1,7 @@
 {
   "schema": 1,
   "files": [
+    "data.views.json",
     "README.md",
     "dashboard.openui",
     "input.openui",

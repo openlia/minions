@@ -33,10 +33,11 @@ or invalid native evidence is reported, not treated as an empty calendar.
 
 ## Briefing view
 
-`briefing.view.json` exposes only bounded upcoming events from `data/reminders.rem`
-through the native Remind reader. It does not expose notes, pending proposals,
-configuration, code, tests, or caches. The briefing reader applies the declared
-record, excerpt, file, and byte limits before adding source-linked events.
+`data.views.json` declares the `agenda` view over `data/reminders.rem`, using the
+runtime's Calendar service. Dashboard source, Hermes queries, and briefing queries
+read the same canonical calendar. It does not expose companion notes or proposals.
+Briefing is off until Configuration includes `"data_views": {"briefing": ["agenda"],
+"scopes": {}}`. A missing native dependency is reported as unavailable.
 
 ## Data and upgrades
 

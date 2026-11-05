@@ -1,7 +1,7 @@
 schema: 1
 id: personal-health
 name: Personal & Family Health Records
-version: 0.4.0
+version: 0.4.1
 description: Personal Health Minion with family profiles, structured encounters, conditions, treatments, measurements, and source-linked records.
 author: OpenLia maintainers
 license: MIT

@@ -1,7 +1,7 @@
 ---
 name: daily-briefing
 description: Collect workspace sources and prepare an evidence-based daily briefing.
-version: 0.2.0
+version: 0.2.1
 platforms: [macos, linux]
 required_environment_variables: []
 required_credential_files: []
@@ -25,8 +25,10 @@ The bundled registry helper discovers collections from folders, local templates,
 schemas, and Markdown records; `workspace.yaml` registration is not required.
 Read `/opt/data/permissions.yaml` for scheduled-work and consequential-action
 boundaries. Minions are discovered as apps, not generic briefing sources. A
-Minion may opt in through a reviewed `briefing.view.json` that declares bounded
-paths under its `data/` directory and an approved read-only reader. Never scan
+Minion declares named views in `data.views.json`; local `config.json` opts into
+briefing via `data_views.briefing` and may narrow scope with `data_views.scopes`.
+The collector queries the trusted runtime CLI, sharing readers with the dashboard
+and Hermes's `minion_describe` / `minion_query` tools. Never scan
 Minion code, tests, dependencies, configuration, pending state, or cached data;
 never execute an app merely to collect a briefing.
 
@@ -43,7 +45,7 @@ python scripts/build_briefing.py --collect \
 
 The collector prints a compact, read-only source packet using discovered entries
 whose `include_in_briefing` is true, plus explicitly declared Minion briefing
-views. It uses structured dates and statuses where available, includes active
+views enabled in local settings. It uses structured dates and statuses where available, includes active
 records and recent open loops, and reports missing source directories separately
 from directories with no matching records.
 By default it includes calendar and due-date items through the next seven days,

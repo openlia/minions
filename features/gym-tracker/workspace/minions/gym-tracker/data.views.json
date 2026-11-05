@@ -1,0 +1,9 @@
+{
+  "schema": 1,
+  "views": [{
+    "id": "sessions", "label": "Workout sessions", "reader": "json",
+    "path": "data/items.json",
+    "fields": ["date", "item", "category", "status", "value"],
+    "title_field": "item", "date_field": "date", "lookback_days": 7, "max_records": 20
+  }]
+}

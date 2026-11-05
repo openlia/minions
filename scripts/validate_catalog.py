@@ -23,7 +23,6 @@ CATALOG_PATH = ROOT / "catalog.json"
 MINION_PACKAGE_FILE = "minion.package.json"
 MAX_MINION_FILE_BYTES = 10 * 1024 * 1024
 MINION_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
-BRIEFING_CATEGORIES = {"calendar", "tasks", "goals", "decisions", "monitors", "claims", "finance", "inbox", "extension"}
 RESERVED_MINION_PARTS = {
     "config.json",
     "data",
@@ -201,52 +200,41 @@ def validate_minion_config_schema(schema: object) -> None:
     jsonschema.Draft202012Validator.check_schema(schema)
 
 
-def validate_minion_briefing_view(view: object) -> None:
-    if not isinstance(view, dict) or set(view) != {"schema", "limits", "sources"} or view.get("schema") != 1:
-        raise ValueError("briefing.view.json must declare schema: 1, limits, and sources")
-    limits = view["limits"]
-    if not isinstance(limits, dict) or set(limits) - {"max_records", "max_excerpt_chars", "max_files", "max_bytes"}:
-        raise ValueError("briefing.view.json limits contain unsupported fields")
-    bounds = {
-        "max_records": (1, 200),
-        "max_excerpt_chars": (40, 4000),
-        "max_files": (1, 128),
-        "max_bytes": (1024, 8 * 1024 * 1024),
-    }
-    for key, (minimum, maximum) in bounds.items():
-        value = limits.get(key)
-        if isinstance(value, bool) or not isinstance(value, int) or not minimum <= value <= maximum:
-            raise ValueError(f"briefing.view.json limits.{key} must be an integer from {minimum} to {maximum}")
-    sources = view["sources"]
-    if not isinstance(sources, list) or not sources or len(sources) > 8:
-        raise ValueError("briefing.view.json sources must contain 1 to 8 entries")
-    for source in sources:
-        if not isinstance(source, dict):
-            raise ValueError("briefing.view.json source must be an object")
-        required = {"path", "reader", "label", "category"}
-        if not required.issubset(source) or set(source) - required - {"lookahead_days", "max_records", "metadata_fields"}:
-            raise ValueError("briefing.view.json source has missing or unsupported fields")
-        path = source["path"]
-        parts = Path(path).parts if isinstance(path, str) else ()
-        if (
-            len(parts) < 2
-            or parts[0] != "data"
-            or any(not part or part in {".", ".."} or part.startswith(".") for part in parts)
-            or not re.fullmatch(r"[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*", str(path))
-        ):
-            raise ValueError("briefing.view.json source paths must be bounded under data/")
-        if source["reader"] not in {"markdown", "remind"}:
-            raise ValueError("briefing.view.json reader must be markdown or remind")
-        if not isinstance(source["label"], str) or not source["label"].strip():
-            raise ValueError("briefing.view.json source label must be non-empty")
-        if source["category"] not in BRIEFING_CATEGORIES:
-            raise ValueError("briefing.view.json source category is unsupported")
-        for key, minimum, maximum in (("lookahead_days", 0, 31), ("max_records", 1, limits["max_records"] or 1)):
-            if key in source and (isinstance(source[key], bool) or not isinstance(source[key], int) or not minimum <= source[key] <= maximum):
-                raise ValueError(f"briefing.view.json source {key} is out of bounds")
-        fields = source.get("metadata_fields", [])
-        if not isinstance(fields, list) or any(not isinstance(field, str) or not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]*", field) for field in fields):
-            raise ValueError("briefing.view.json metadata_fields must contain safe field names")
+def validate_minion_data_views(document: object) -> None:
+    """Portable preflight only; paired runtime validates the authoritative contract."""
+    if not isinstance(document, dict) or set(document) != {"schema", "views"} or type(document["schema"]) is not int or document["schema"] != 1:
+        raise ValueError("data.views.json requires schema: 1 and views")
+    views = document["views"]
+    if not isinstance(views, list) or len(views) > 8:
+        raise ValueError("data.views.json permits at most eight views")
+    seen = set()
+    for view in views:
+        required = {"id", "label", "reader", "path", "fields", "title_field", "date_field"}
+        optional = {"id_field", "required_filters", "max_records", "max_files", "max_bytes", "max_field_chars", "lookback_days"}
+        if not isinstance(view, dict) or not required.issubset(view) or set(view) - required - optional:
+            raise ValueError("data view has missing or unsupported properties")
+        if not isinstance(view["id"], str) or not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,63}", view["id"]) or view["id"] in seen:
+            raise ValueError("Invalid or duplicate data view id")
+        seen.add(view["id"])
+        if not isinstance(view["label"], str) or not 1 <= len(view["label"]) <= 100 or view["reader"] not in {"markdown", "json", "calendar"}:
+            raise ValueError("Invalid view label or reader")
+        if not isinstance(view["path"], str) or not re.fullmatch(r"data/[A-Za-z0-9_-][A-Za-z0-9_.-]*(?:/[A-Za-z0-9_-][A-Za-z0-9_.-]*)*", view["path"]):
+            raise ValueError("Data view must select a bounded data/ path")
+        blocked = {"pending", "cache", "caches", "state", "logs", "uploads", "node_modules", "tests", "scripts", "__pycache__", "config.json", "context.json", "data.views.json", "secrets.json", "credentials.json"}
+        if any(part.lower() in blocked for part in view["path"].split("/")):
+            raise ValueError("Data view cannot select app internals")
+        fields = view["fields"]
+        if not isinstance(fields, list) or not 1 <= len(fields) <= 32 or any(not isinstance(field, str) or not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]{0,63}", field) for field in fields):
+            raise ValueError("Invalid view fields")
+        required_filters = view.get("required_filters", [])
+        if not isinstance(required_filters, list) or len(required_filters) > 8:
+            raise ValueError("Invalid required filters")
+        for name in [view["title_field"], view["date_field"], *required_filters, *([view["id_field"]] if "id_field" in view else [])]:
+            if name not in fields:
+                raise ValueError("View identity/date/scope must be declared fields")
+        for key, low, high in [("max_records", 1, 100), ("max_files", 1, 200), ("max_bytes", 1024, 4194304), ("max_field_chars", 40, 1000), ("lookback_days", 0, 14)]:
+            if key in view and (type(view[key]) is not int or not low <= view[key] <= high):
+                raise ValueError(f"Invalid {key}")
 
 
 def validate_minion_package_dir(minion_dir: Path, minion_id: str) -> list[str]:
@@ -319,12 +307,12 @@ def validate_minion_package_dir(minion_dir: Path, minion_id: str) -> list[str]:
         except Exception as exc:
             errors.append(f"{label}/config.schema.json: {exc}")
 
-    briefing_view_path = minion_dir / "briefing.view.json"
-    if "briefing.view.json" in seen and briefing_view_path.is_file() and not briefing_view_path.is_symlink():
+    briefing_view_path = minion_dir / "data.views.json"
+    if "data.views.json" in seen and briefing_view_path.is_file() and not briefing_view_path.is_symlink():
         try:
-            validate_minion_briefing_view(json.loads(briefing_view_path.read_text(encoding="utf-8")))
+            validate_minion_data_views(json.loads(briefing_view_path.read_text(encoding="utf-8")))
         except Exception as exc:
-            errors.append(f"{label}/briefing.view.json: {exc}")
+            errors.append(f"{label}/data.views.json: {exc}")
 
     for path in sorted(minion_dir.rglob("*")):
         rel = path.relative_to(minion_dir).as_posix()

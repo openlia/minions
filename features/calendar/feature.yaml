@@ -1,7 +1,7 @@
 schema: 1
 id: calendar
 name: Calendar & Remind Scheduling
-version: 0.4.0
+version: 0.4.1
 description: Calendar Minion with native Remind appointments, confirmed local entry, month/week/timeline views, and companion event notes.
 author: OpenLia maintainers
 license: MIT
@@ -22,8 +22,7 @@ domains:
       - calendar
       - event
       - remind
-    include_in_briefing: true
-    briefing_category: calendar
+    include_in_briefing: false
     skills:
       - calendar
     feature: calendar

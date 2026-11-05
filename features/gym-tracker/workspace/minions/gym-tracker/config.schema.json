@@ -7,6 +7,14 @@
     "trigger"
   ],
   "properties": {
+    "data_views": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "briefing": {"type": "array", "items": {"type": "string", "enum": ["sessions"]}, "uniqueItems": true, "default": []},
+        "scopes": {"type": "object", "additionalProperties": {"type": "object"}, "default": {}}
+      },
+      "default": {"briefing": [], "scopes": {}}
+    },
     "trigger": {
       "type": "object",
       "additionalProperties": false,

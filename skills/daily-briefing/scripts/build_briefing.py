@@ -27,6 +27,7 @@ for SYSTEM_SCRIPTS in SYSTEM_SCRIPTS_CANDIDATES:
         break
 
 from workspace_registry import briefing_sources, load_registry
+from minion_views import collect_minion_views
 
 
 MAX_SOURCE_READ = 16 * 1024
@@ -45,126 +46,18 @@ SOURCE_DIRECTORIES = (
     ("knowledge/claims", "Claims", "claims"),
     ("inbox", "Inbox", "inbox"),
 )
-MINION_VIEW_FILENAME = "briefing.view.json"
-MINION_ID_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]*$")
-BRIEFING_CATEGORIES = {"calendar", "tasks", "goals", "decisions", "monitors", "claims", "finance", "inbox", "extension"}
-MINION_CATEGORY_ROOTS = {
-    "calendar": "calendar",
-    "tasks": "tasks",
-    "goals": "goals",
-    "decisions": "decisions",
-    "claims": "knowledge/claims",
-    "inbox": "inbox",
-}
 TERMINAL_TASK_STATUSES = {"done", "completed", "cancelled", "canceled", "archived"}
 INACTIVE_RECORD_STATUSES = {"paused", "completed", "abandoned", "archived", "retired", "superseded", "rejected", "retracted"}
-
-
-def _bounded_int(value: Any, default: int, minimum: int, maximum: int) -> int | None:
-    if value is None:
-        return default
-    if isinstance(value, bool) or not isinstance(value, int) or not minimum <= value <= maximum:
-        return None
-    return value
-
-
-def _minion_briefing_sources(workspace: Path) -> dict[str, dict[str, Any]]:
-    """Load reviewed, data-only Minion briefing views without executing apps."""
-    root = workspace / "minions"
-    if not root.is_dir() or root.is_symlink():
-        return {}
-    sources: dict[str, dict[str, Any]] = {}
-    for app in sorted(root.iterdir()):
-        if not app.is_dir() or app.is_symlink() or not MINION_ID_PATTERN.fullmatch(app.name):
-            continue
-        view_path = app / MINION_VIEW_FILENAME
-        if view_path.is_symlink() or not view_path.is_file():
-            continue
-        try:
-            if view_path.stat().st_size > 64 * 1024:
-                continue
-            view = json.loads(view_path.read_text(encoding="utf-8"))
-        except (OSError, UnicodeError, json.JSONDecodeError):
-            continue
-        if not isinstance(view, dict) or view.get("schema") != 1 or not isinstance(view.get("sources"), list):
-            continue
-        limits = view.get("limits") if isinstance(view.get("limits"), dict) else {}
-        max_records = _bounded_int(limits.get("max_records"), 40, 1, 200)
-        max_excerpt = _bounded_int(limits.get("max_excerpt_chars"), DEFAULT_EXCERPT_CHARS, 40, 4000)
-        max_files = _bounded_int(limits.get("max_files"), 32, 1, 128)
-        max_bytes = _bounded_int(limits.get("max_bytes"), 2 * 1024 * 1024, 1024, 8 * 1024 * 1024)
-        if None in (max_records, max_excerpt, max_files, max_bytes):
-            continue
-        for raw in view["sources"]:
-            if not isinstance(raw, dict):
-                continue
-            relative = raw.get("path")
-            reader = raw.get("reader")
-            label = raw.get("label")
-            category = raw.get("category")
-            if (
-                not isinstance(relative, str)
-                or not isinstance(label, str)
-                or not label.strip()
-                or reader not in {"markdown", "remind"}
-                or category not in BRIEFING_CATEGORIES
-            ):
-                continue
-            parts = Path(relative).parts
-            if (
-                len(parts) < 2
-                or parts[0] != "data"
-                or any(not part or part in {".", ".."} or part.startswith(".") for part in parts)
-                or not re.fullmatch(r"[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*", relative)
-            ):
-                continue
-            target = app / relative
-            try:
-                target.resolve().relative_to(app.resolve())
-            except (OSError, RuntimeError, ValueError):
-                continue
-            source_path = f"minions/{app.name}/{relative}"
-            source_max_records = _bounded_int(raw.get("max_records"), max_records, 1, max_records)
-            source_lookahead = _bounded_int(raw.get("lookahead_days"), 7, 0, 31)
-            if source_max_records is None or source_lookahead is None:
-                continue
-            fields = raw.get("metadata_fields", [])
-            if not isinstance(fields, list) or any(not isinstance(field, str) or not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]*", field) for field in fields):
-                continue
-            if source_path in sources:
-                continue
-            sources[source_path] = {
-                "path": source_path,
-                "target": target,
-                "reader": reader,
-                "label": label.strip(),
-                "category": category,
-                "max_records": source_max_records,
-                "max_excerpt_chars": max_excerpt,
-                "max_files": max_files,
-                "max_bytes": max_bytes,
-                "lookahead_days": source_lookahead,
-                "metadata_fields": fields,
-            }
-    return sources
 
 
 def _source_directories(workspace: Path) -> tuple[tuple[str, str, str], ...]:
     registry = load_registry(workspace)
     if registry is None:
-        sources = SOURCE_DIRECTORIES
-    else:
-        sources = tuple(
-            (source["path"], source["heading"], source["category"])
-            for source in briefing_sources(registry)
-        )
-    minion_sources = _minion_briefing_sources(workspace)
-    for spec in minion_sources.values():
-        root = MINION_CATEGORY_ROOTS.get(spec["category"])
-        if root:
-            sources = tuple(source for source in sources if source[0] != root)
-    sources += tuple((spec["path"], spec["label"], spec["category"]) for spec in minion_sources.values())
-    return sources
+        return SOURCE_DIRECTORIES
+    return tuple(
+        (source["path"], source["heading"], source["category"])
+        for source in briefing_sources(registry)
+    )
 
 
 def _parse_iso_date(value: str) -> date:
@@ -279,13 +172,7 @@ def _read_record(path: Path, workspace: Path) -> dict[str, Any] | None:
 
 
 def _source_files(directory: Path, workspace: Path) -> list[Path]:
-    if not _within_workspace(directory, workspace):
-        return []
-    if directory.is_file():
-        if directory.is_symlink() or directory.suffix != ".md":
-            return []
-        return [directory]
-    if not directory.is_dir():
+    if not directory.is_dir() or not _within_workspace(directory, workspace):
         return []
     paths = []
     for root, directories, filenames in os.walk(directory, topdown=True, followlinks=False):
@@ -317,226 +204,6 @@ def _source_files(directory: Path, workspace: Path) -> list[Path]:
                 continue
             paths.append(path)
     return paths
-
-
-def _remind_entries(payload: Any) -> list[dict[str, Any]]:
-    if isinstance(payload, dict):
-        nested = payload.get("entries")
-        if isinstance(nested, list):
-            return _remind_entries(nested)
-        if "date" in payload and any(key in payload for key in ("body", "plain_body", "summary", "text", "title")):
-            return [payload]
-        return []
-    if isinstance(payload, list):
-        entries = []
-        for item in payload:
-            entries.extend(_remind_entries(item))
-        return entries
-    return []
-
-
-def _remind_info(entry: dict[str, Any]) -> dict[str, str]:
-    raw = entry.get("info") or entry.get("INFO") or {}
-    if isinstance(raw, dict):
-        return {str(key).casefold().replace("_", "-"): str(value) for key, value in raw.items()}
-    if isinstance(raw, list):
-        result = {}
-        for item in raw:
-            if not isinstance(item, str) or ":" not in item:
-                continue
-            key, value = item.split(":", 1)
-            result[key.strip().casefold().replace("_", "-")] = value.strip()
-        return result
-    return {}
-
-
-def _bounded_remind_tree(spec: dict[str, Any]) -> str | None:
-    """Bound literal includes before invoking the approved native reader."""
-    primary = spec["target"]
-    root = primary.parent
-    pending = [primary]
-    visited: set[Path] = set()
-    total_bytes = 0
-    include_pattern = re.compile(r"^\s*INCLUDE\s+(.+?)\s*$", re.IGNORECASE)
-    forbidden_pattern = re.compile(r"^\s*(?:SYSINCLUDE|INCLUDECMD|DO)\b", re.IGNORECASE)
-    while pending:
-        path = pending.pop()
-        try:
-            resolved = path.resolve()
-            resolved.relative_to(root.resolve())
-        except (OSError, RuntimeError, ValueError):
-            return "Remind source path escapes its declared data folder"
-        if path.is_symlink():
-            return "Remind source contains a symlink"
-        if resolved in visited:
-            return "Remind source contains a repeated or cyclic include"
-        if len(visited) >= spec["max_files"]:
-            return "Remind source exceeds its file limit"
-        if not path.is_file():
-            return "Remind source or include is missing"
-        try:
-            content = path.read_text(encoding="utf-8")
-        except (OSError, UnicodeError):
-            return "Remind source could not be read"
-        visited.add(resolved)
-        total_bytes += len(content.encode("utf-8"))
-        if total_bytes > spec["max_bytes"]:
-            return "Remind source exceeds its byte limit"
-        for line in content.splitlines():
-            if forbidden_pattern.match(line):
-                return "Remind source contains an unsupported executable directive"
-            match = include_pattern.match(line)
-            if not match:
-                continue
-            relative = match.group(1).strip()
-            parts = Path(relative).parts
-            if (
-                not parts
-                or ".." in parts
-                or any(part.startswith(".") for part in parts)
-                or not re.fullmatch(r"[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*\.(?:rem|remind)", relative)
-            ):
-                return "Remind source contains a non-literal or unsafe include"
-            pending.append(path.parent / relative)
-    return None
-
-
-def _read_remind_source(
-    spec: dict[str, Any],
-    lookahead_days: int,
-    briefing_date: date,
-) -> tuple[list[dict[str, Any]], str]:
-    """Read a declared Minion Remind source through native JSON mode."""
-    primary = spec["target"]
-    directory = primary.parent
-    filename = primary.name
-    if not directory.is_dir():
-        return [], "source directory missing"
-    if not primary.is_file() or primary.is_symlink():
-        return [], "native Remind source missing"
-    tree_error = _bounded_remind_tree(spec)
-    if tree_error:
-        return [], tree_error
-    try:
-        modified = date.fromtimestamp(primary.stat().st_mtime)
-    except OSError:
-        modified = briefing_date
-    records: list[dict[str, Any]] = []
-    seen: set[tuple[str, str, str]] = set()
-    for offset in range(min(spec["lookahead_days"], lookahead_days) + 1):
-        requested = briefing_date + timedelta(days=offset)
-        try:
-            result = subprocess.run(
-                ["remind", "-r", "-q", "-ppp", filename, requested.isoformat()],
-                cwd=directory,
-                capture_output=True,
-                text=True,
-                timeout=15,
-                check=False,
-            )
-        except (OSError, subprocess.TimeoutExpired) as exc:
-            return records, f"native Remind unavailable ({type(exc).__name__})"
-        if result.returncode != 0 or result.stderr.strip():
-            detail = result.stderr.strip() or result.stdout.strip() or "unknown native Remind error"
-            return records, f"native Remind error: {detail[:160]}"
-        try:
-            payload = json.loads(result.stdout or "{}")
-        except json.JSONDecodeError:
-            return records, "native Remind returned invalid JSON"
-        for index, entry in enumerate(_remind_entries(payload)):
-            raw_date = entry.get("date") or entry.get("start_date") or entry.get("start")
-            event_date = _date_value(raw_date) if raw_date is not None else requested
-            if event_date != requested:
-                continue
-            info = _remind_info(entry)
-            title = str(
-                entry.get("body")
-                or entry.get("plain_body")
-                or entry.get("summary")
-                or entry.get("text")
-                or entry.get("msg")
-                or entry.get("title")
-                or "Untitled event"
-            ).strip()
-            raw_start = entry.get("eventstart_in_tz") or entry.get("eventstart") or entry.get("start_time") or entry.get("start")
-            start = str(raw_start or "").strip()
-            if not start and entry.get("time_in_tz", entry.get("time")) is not None:
-                try:
-                    minutes = int(entry.get("time_in_tz", entry.get("time")))
-                    start = f"{minutes // 60:02d}:{minutes % 60:02d}"
-                except (TypeError, ValueError):
-                    start = ""
-            duration = str(entry.get("eventduration") or entry.get("duration") or "").strip()
-            key = (event_date.isoformat(), start, title)
-            if key in seen:
-                continue
-            seen.add(key)
-            if re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?", start):
-                starts_at = start
-            else:
-                starts_at = event_date.isoformat() + (f"T{start}" if re.fullmatch(r"\d{2}:\d{2}(?::\d{2})?", start) else "")
-            excerpt = info.get("description") or info.get("agenda") or ""
-            metadata = {
-                "starts_at": starts_at,
-                "date": event_date.isoformat(),
-                "duration": duration,
-                "status": "scheduled",
-                "location": info.get("location"),
-            }
-            fields = spec["metadata_fields"]
-            if fields:
-                metadata = {key: metadata.get(key) for key in fields if key in metadata}
-            source = f"{spec['path']}#{event_date.isoformat()}-{index}"
-            records.append(
-                {
-                    "path": source,
-                    "title": title,
-                    "metadata": metadata,
-                    "excerpt": excerpt[:spec["max_excerpt_chars"]],
-                    "modified": modified,
-                }
-            )
-            if len(records) >= spec["max_records"]:
-                return records, f"{len(records)} native event(s) (limit reached)"
-    return records, f"{len(records)} native event(s)"
-
-
-def _read_markdown_source(spec: dict[str, Any], workspace: Path) -> tuple[list[dict[str, Any]], str]:
-    target = spec["target"]
-    if not target.exists():
-        return [], "source directory missing"
-    if target.is_symlink() or not _within_workspace(target, workspace):
-        return [], "source path skipped"
-    paths = _source_files(target, workspace)[: spec["max_files"]]
-    total_bytes = 0
-    records = []
-    for path in paths:
-        try:
-            total_bytes += path.stat().st_size
-        except OSError:
-            continue
-        if total_bytes > spec["max_bytes"]:
-            break
-        record = _read_record(path, workspace)
-        if record is None:
-            continue
-        fields = spec["metadata_fields"]
-        if fields:
-            record["metadata"] = {key: record["metadata"].get(key) for key in fields if key in record["metadata"]}
-        record["excerpt"] = record["excerpt"][: spec["max_excerpt_chars"]]
-        records.append(record)
-        if len(records) >= spec["max_records"]:
-            break
-    suffix = " (limit reached)" if len(records) >= spec["max_records"] or len(paths) >= spec["max_files"] or total_bytes > spec["max_bytes"] else ""
-    return records, f"{len(records)} Markdown record(s){suffix}"
-
-
-def _read_minion_source(
-    spec: dict[str, Any], workspace: Path, briefing_date: date, lookahead_days: int
-) -> tuple[list[dict[str, Any]], str]:
-    if spec["reader"] == "remind":
-        return _read_remind_source(spec, lookahead_days, briefing_date)
-    return _read_markdown_source(spec, workspace)
 
 
 def _within_workspace(path: Path, workspace: Path) -> bool:
@@ -824,7 +491,6 @@ def collect_sources(
     previous = _previous_briefing(workspace, briefing_date)
     since_date = since or (previous[0] if previous else briefing_date - timedelta(days=1))
     source_directories = _source_directories(workspace)
-    minion_sources = _minion_briefing_sources(workspace)
     git_available, git_paths = _git_changes(workspace, since_date, source_directories)
     changed_paths = set(git_paths)
 
@@ -833,36 +499,6 @@ def collect_sources(
     scanned_count = 0
     for relative_dir, heading, category in source_directories:
         directory = workspace / relative_dir
-        minion_spec = minion_sources.get(relative_dir)
-        if minion_spec is not None:
-            minion_records, minion_status = _read_minion_source(
-                minion_spec, workspace, briefing_date, lookahead_days
-            )
-            scanned_count += len(minion_records)
-            records = []
-            for record in minion_records:
-                candidate = _record_candidate(
-                    record,
-                    category,
-                    briefing_date,
-                    lookahead_days,
-                    recent_days,
-                    changed_paths,
-                )
-                if candidate is not None:
-                    score, reason = candidate
-                    records.append((score, record, reason))
-            records.sort(
-                key=lambda item: (
-                    -item[0],
-                    str(item[1]["metadata"].get("starts_at") or "9999"),
-                    item[1]["title"].casefold(),
-                    item[1]["path"],
-                )
-            )
-            candidates_by_source[relative_dir] = records
-            status_by_source[relative_dir] = minion_status
-            continue
         if not directory.is_dir():
             status_by_source[relative_dir] = "source directory missing"
             candidates_by_source[relative_dir] = []
@@ -952,7 +588,7 @@ def collect_sources(
         records = candidates_by_source[relative_dir]
         section_records = selected_records[relative_dir]
         blocks.append((f"## {heading}", False))
-        if not (workspace / relative_dir).exists():
+        if not (workspace / relative_dir).is_dir():
             blocks.append(("- Source directory is missing.", False))
         elif "resolves outside workspace" in status_by_source[relative_dir]:
             blocks.append(("- Source directory skipped because it resolves outside the workspace.", False))
@@ -977,6 +613,9 @@ def collect_sources(
     else:
         git_block.append("- No local Git history available; use source mtimes and dates as context.")
     blocks.extend((block, False) for block in git_block)
+
+    minion_blocks = collect_minion_views(workspace, briefing_date, lookahead_days, max_per_section, max(0, max_docs - selected_count))
+    blocks.extend((block, False) for block in minion_blocks)
 
     body_blocks: list[tuple[str, bool]] = []
     candidates_in_packet = 0

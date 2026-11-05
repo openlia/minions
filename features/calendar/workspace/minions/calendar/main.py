@@ -326,13 +326,13 @@ def pending_proposals() -> list[dict]:
 def render_dashboard() -> str:
     children = [
         'Callout(variant: "info", title: "Calendar", description: "Native Remind is the source of truth. New appointments require explicit SAVE confirmation; external notifications and invitations are off.")',
-        "Calendar([views])",
+        'Calendar(children: [views], source: "data/reminders.rem")',
     ]
     pending = [proposal for proposal in pending_proposals() if proposal.get("status") == "pending"]
     for proposal in pending:
         identifier = proposal["id"]
         payload = proposal["payload"]
-        description = f"{payload['title']} — {payload['start']} to {payload['end']}\nInspect the proposed Remind entry before confirming."
+        description = f"{payload['title']} — {payload['start']} to {payload['end']}\nExact proposed Remind entry:\n{proposal['entry']}\nInspect all details before confirming."
         children.append(f"Callout(variant: \"info\", title: \"Pending appointment\", description: {json.dumps(description)})")
         children.append(
             "Form(name: \"minionInput\", fields: ["

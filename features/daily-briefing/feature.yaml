@@ -1,7 +1,7 @@
 schema: 1
 id: daily-briefing
 name: Daily Briefing
-version: 0.2.0
+version: 0.2.1
 description: Dated morning briefing reports synthesizing calendar, tasks, goals, and inbox items.
 author: OpenLia maintainers
 license: MIT

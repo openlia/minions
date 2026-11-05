@@ -5,7 +5,7 @@
     {
       "id": "personal-os",
       "name": "Personal Operating System (Personal OS)",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "description": "Complete Personal OS workspace profile with tasks, goals, calendar, verifiable claims, daily briefings, and productivity skills.",
       "path": "profiles/personal-os",
       "features": [
@@ -53,7 +53,7 @@
     {
       "id": "calendar",
       "name": "Calendar & Remind Scheduling",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "description": "Calendar Minion with native Remind appointments, confirmed local entry, month/week/timeline views, and companion event notes.",
       "path": "features/calendar",
       "domains": [
@@ -94,7 +94,7 @@
     {
       "id": "daily-briefing",
       "name": "Daily Briefing",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "description": "Dated morning briefing reports synthesizing calendar, tasks, goals, and inbox items.",
       "path": "features/daily-briefing",
       "domains": [
@@ -173,7 +173,7 @@
     {
       "id": "gym-tracker",
       "name": "Gym & Workout Tracker",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "description": "Programmable workout tracker Minion for logging sets, progressive overload, and weekly volume.",
       "path": "features/gym-tracker",
       "domains": [
@@ -239,7 +239,7 @@
     {
       "id": "personal-finance",
       "name": "Personal Finance & Double-Entry Accounting",
-      "version": "0.6.0",
+      "version": "0.6.1",
       "description": "Personal Finance Minion with native hledger reports, confirmed transaction intake, account mappings, and source-linked reviews.",
       "path": "features/personal-finance",
       "domains": [
@@ -261,7 +261,7 @@
     {
       "id": "personal-health",
       "name": "Personal & Family Health Records",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "description": "Personal Health Minion with family profiles, structured encounters, conditions, treatments, measurements, and source-linked records.",
       "path": "features/personal-health",
       "domains": [
@@ -346,7 +346,7 @@
     {
       "id": "daily-briefing",
       "name": "daily-briefing",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "description": "Collect workspace sources and prepare an evidence-based daily briefing.",
       "path": "skills/daily-briefing",
       "requires": {}

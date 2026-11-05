@@ -33,12 +33,23 @@ in the Vault. Portable templates/schemas stay outside instance data, in `templat
 
 Collection discovery identifies each Minion once, not its scripts, tests,
 dependency packages, schemas, or nested data folders as separate collections.
-Minion data is excluded from generic briefing sources unless the app ships a
-reviewed `briefing.view.json`. That view may expose only bounded paths under the
-app's `data/` directory through approved read-only readers (`markdown` or native
-`remind`). The collector never scans code, tests, dependencies, configuration,
-pending state, or caches, and never executes an app. Link canonical records and
-do not also count an app's cached copy.
+Minions declare named structured views in reviewed `data.views.json` files.
+OpenLia's runtime validates and reads these through approved `markdown`, `json`,
+or `calendar` adapters; Calendar reuses the same native service as its dashboard.
+Hermes uses `minion_describe` and `minion_query`; daily briefing calls the bundled
+runtime CLI, not app entrypoints or its own data scanner. A missing reader or
+invalid source is unavailable, never an empty calendar or zero activity.
+
+Installing a declaration does not enable scheduled disclosure. Local `config.json`
+opts into view IDs under `data_views.briefing` (default `[]`). Optional
+`data_views.scopes` constrains every query, and callers cannot widen that scope.
+Health review views require an explicit `person_id`; it is never inferred.
+Only declared scalar fields are returned, never Markdown bodies, code, tests,
+dependencies, pending state, or caches. Date windows, scan budgets, field lengths,
+and result limits are enforced by the runtime; truncation is reported. Ordinary
+workspace sources are not removed merely because a Minion has similar data.
+Dashboard visibility/pagination is not permission. Link canonical records and
+avoid counting duplicate representations of the same record.
 Missing exports do not mean zero activity. Reading a report must never run code.
 
 ## Migrating old Mini-Projects
@@ -85,10 +96,18 @@ its distributable tree under `workspace/minions/<slug>/`. Do not select the whol
 }
 ```
 
-An app that intentionally contributes bounded canonical data to daily briefings
-may also list a reviewed `briefing.view.json`. Its sources must stay under the
-app's `data/` directory and use only the runtime's approved read-only readers;
-the view cannot select code, tests, configuration, pending state, or caches.
+An app may also list reviewed `data.views.json`. Its sources stay under the app's
+`data/` directory; no declaration may supply executable reader code. For example:
+
+```json
+{"schema":1,"views":[{"id":"sessions","label":"Workout sessions","reader":"json","path":"data/items.json","fields":["item","date","status"],"title_field":"item","date_field":"date","max_records":20}]}
+```
+
+To opt in locally, save `"data_views": {"briefing": ["sessions"], "scopes": {}}`
+in Configuration. A Health scope would instead include
+`"scopes": {"follow-ups": {"person_id": "person-001"}}`. Do not populate private
+recipient scopes in distributed defaults. Test exact runtime/catalog revisions
+together before promoting this development contract.
 
 The manifest is included implicitly. Use individual relative files, not globs.
 Include both schemas/views, one runtime and its input handler, and tests. List

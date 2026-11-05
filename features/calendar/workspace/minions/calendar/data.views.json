@@ -1,0 +1,9 @@
+{
+  "schema": 1,
+  "views": [{
+    "id": "agenda", "label": "Upcoming appointments", "reader": "calendar",
+    "path": "data/reminders.rem",
+    "fields": ["title", "start", "end", "timezone", "location"],
+    "title_field": "title", "date_field": "start", "max_records": 20
+  }]
+}

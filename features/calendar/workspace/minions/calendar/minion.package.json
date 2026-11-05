@@ -6,7 +6,7 @@
     "input.openui",
     "input.schema.json",
     "config.schema.json",
-    "briefing.view.json",
+    "data.views.json",
     "input.py",
     "main.py",
     "requirements.txt",
