@@ -1,7 +1,7 @@
 schema: 1
 id: personal-finance
 name: Personal Finance & Double-Entry Accounting
-version: 0.6.1
+version: 0.6.2
 description: Personal Finance Minion with native hledger reports, confirmed transaction intake, account mappings, and source-linked reviews.
 author: OpenLia maintainers
 license: MIT

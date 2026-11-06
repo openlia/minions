@@ -56,6 +56,39 @@ class FinanceTests(unittest.TestCase):
         self.assertEqual(result["status"], "cancelled")
         self.assertFalse((self.root / "data/journal.hledger").exists())
 
+    def test_repeated_proposal_forms_have_independent_names_and_explicit_actions(self):
+        first = self.preview()
+        second = self.preview()
+        dashboard = main.render_dashboard()
+        for identifier in (first, second):
+            self.assertIn(f'Form(name: "finance-proposal-{identifier}"', dashboard)
+            self.assertIn(f'Select(name: "proposal_id", value: "{identifier}"', dashboard)
+        self.assertEqual(dashboard.count('RadioGroup(name: "action"'), 2)
+        self.assertNotIn('Form(name: "minionInput"', dashboard)
+        self.assertLess(dashboard.index('CardHeader(title: "Pending posting'), dashboard.index('Finance(children:'))
+
+    def test_blank_confirmation_cancels_but_never_authorizes_posting(self):
+        identifier = self.preview()
+        with self.assertRaises(jsonschema.ValidationError):
+            main.process_input(dict(action="confirm", proposal_id=identifier, confirmation=""))
+        self.assertFalse((self.root / "data/journal.hledger").exists())
+        result = main.process_input(dict(action="cancel", proposal_id=identifier, confirmation=""))
+        self.assertEqual(result["status"], "cancelled")
+        self.assertFalse((self.root / "data/journal.hledger").exists())
+
+    def test_only_the_confirmed_proposal_posts_and_sibling_can_still_be_cancelled(self):
+        first = self.preview()
+        second = self.preview()
+        self.confirm(second)
+        journal = self.root / "data/journal.hledger"
+        before = journal.read_text()
+        self.assertIn(f"minion-id: {second}", before)
+        self.assertNotIn(f"minion-id: {first}", before)
+        with self.assertRaisesRegex(ValueError, "changed since preview"):
+            self.confirm(first)
+        main.process_input(dict(action="cancel", proposal_id=first, confirmation=""))
+        self.assertEqual(journal.read_text(), before)
+
     def test_changed_journal_invalidates_preview(self):
         identifier = self.preview()
         journal = self.root / "data/journal.hledger"

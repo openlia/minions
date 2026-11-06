@@ -13,11 +13,11 @@
     "credit_account": {"type": "string", "minLength": 1, "maxLength": 200},
     "source_ref": {"type": "string", "pattern": "^openlia://source/[^\\s;]+$", "maxLength": 500},
     "proposal_id": {"type": "string", "pattern": "^[a-f0-9]{32}$"},
-    "confirmation": {"type": "string", "enum": ["POST"]}
+    "confirmation": {"type": "string", "enum": ["", "POST"]}
   },
   "allOf": [
     {"if": {"properties": {"action": {"const": "preview"}}}, "then": {"required": ["date", "description", "amount", "commodity", "debit_account", "credit_account"]}},
     {"if": {"required": ["action"], "properties": {"action": {"enum": ["confirm", "cancel"]}}}, "then": {"required": ["proposal_id"]}},
-    {"if": {"required": ["action"], "properties": {"action": {"const": "confirm"}}}, "then": {"required": ["confirmation"]}}
+    {"if": {"required": ["action"], "properties": {"action": {"const": "confirm"}}}, "then": {"required": ["confirmation"], "properties": {"confirmation": {"const": "POST"}}}}
   ]
 }
