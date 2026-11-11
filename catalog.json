@@ -359,6 +359,16 @@
       "requires": {}
     },
     {
+      "id": "google-docs",
+      "name": "google-docs",
+      "version": "0.1.0",
+      "description": "Read, append, and update Google Docs files shared with the service account.",
+      "path": "skills/google-docs",
+      "requires": {
+        "python": "requirements.txt"
+      }
+    },
+    {
       "id": "inbox-triage",
       "name": "inbox-triage",
       "version": "0.4.0",
