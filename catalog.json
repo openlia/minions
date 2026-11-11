@@ -171,6 +171,22 @@
       }
     },
     {
+      "id": "google-docs",
+      "name": "Google Docs Integration",
+      "version": "0.1.0",
+      "description": "Read, append, and update Google Docs files shared with the service account.",
+      "path": "features/google-docs",
+      "domains": [
+        "google-docs"
+      ],
+      "skills": [
+        "google-docs"
+      ],
+      "requires": {
+        "features": []
+      }
+    },
+    {
       "id": "ideas",
       "name": "Ideas & Someday/Maybe",
       "version": "0.3.0",
@@ -357,16 +373,6 @@
       "description": "Capture, unlock, OCR, search, and inspect evidence documents, YouTube video transcripts, and video summaries in the OpenLia Ingestion Vault across embedded and standalone deployments.",
       "path": "skills/document-intelligence",
       "requires": {}
-    },
-    {
-      "id": "google-docs",
-      "name": "google-docs",
-      "version": "0.1.0",
-      "description": "Read, append, and update Google Docs files shared with the service account.",
-      "path": "skills/google-docs",
-      "requires": {
-        "python": "requirements.txt"
-      }
     },
     {
       "id": "inbox-triage",
