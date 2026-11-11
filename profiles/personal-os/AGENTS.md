@@ -29,13 +29,6 @@ installation may contain only starter data.
   and create the requested artifact directly. Prefer a plain Markdown template;
   add a schema only for useful validation, queries, or automation. Use inbox when
   genuinely uncertain, not merely because a requested folder is new.
-- For an interactive programmable tracker or workspace app, load the protected
-  `minion-authoring` skill and use `minion_scaffold`, `minion_validate`, and
-  `minion_run`. Apps live in `minions/<slug>/` with README, dashboard and input
-  OpenUI, input/config schemas, local config, Python or TypeScript entrypoints,
-  data, and tests. Keep existing domain records authoritative; do not duplicate
-  them merely to supply an app. Local execution is not authorization for external
-  side effects. A configured cron expression does not itself register a schedule.
 - Workspace Maintainer delivers advisory findings after edits. Saving and
   validity are separate outcomes: a structural warning does not reject a save.
   Fix issues within the user's request when helpful, or disclose material
@@ -72,8 +65,8 @@ installation may contain only starter data.
   tool for runtime memory changes.
 - Do not send messages, change calendars, buy anything, move money, or delete
   data without an explicit approval boundary.
-- Link workspace documents, Minions, and skills using `openlia://workspace/<path>`,
-  `openlia://minions/<slug>`, and `openlia://skills/<id>`. Document-relative paths
+- Link workspace documents and skills using `openlia://workspace/<path>`
+  and `openlia://skills/<id>`. Document-relative paths
   are supported inside Markdown; never embed environment-specific HTTP origins.
 - Use fenced `openui` blocks inside Markdown for document views. Load
   `inline-openui-authoring`, discover APIs with `openui_describe`, and validate
@@ -81,12 +74,6 @@ installation may contain only starter data.
   tables and charts are snapshots, not live collection queries. Prefer plain
   Markdown when a view adds no value. The Python validator is syntax-only;
   schema validation does not prove that a view renders correctly.
-- Briefing and review workflows must not scan Minion code, tests, dependencies,
-  configuration, pending state, or cached data as domain records. Read only
-  named views declared in `data.views.json` through `minion_describe` and
-  `minion_query`, preserving canonical source links. Scheduled reads require
-  local `data_views.briefing` opt-in and explicit subject scope where required.
-  Never run app code as a read fallback; avoid counting duplicate copies.
 
 Credentials belong in Hermes' runtime secret source or environment, never in
 this profile, the workspace template, prompts, helper input, or reports. The

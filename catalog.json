@@ -53,11 +53,11 @@
     {
       "id": "calendar",
       "name": "Calendar & Remind Scheduling",
-      "version": "0.4.1",
-      "description": "Calendar Minion with native Remind appointments, confirmed local entry, month/week/timeline views, and companion event notes.",
+      "version": "0.3.0",
+      "description": "Remind-backed appointments with OpenUI month, week, and event-duration timeline views, plus companion event notes.",
       "path": "features/calendar",
       "domains": [
-        "minions/calendar"
+        "calendar"
       ],
       "skills": [
         "calendar"
@@ -171,18 +171,6 @@
       }
     },
     {
-      "id": "gym-tracker",
-      "name": "Gym & Workout Tracker",
-      "version": "0.1.1",
-      "description": "Programmable workout tracker Minion for logging sets, progressive overload, and weekly volume.",
-      "path": "features/gym-tracker",
-      "domains": [
-        "minions/gym-tracker"
-      ],
-      "skills": [],
-      "requires": {}
-    },
-    {
       "id": "ideas",
       "name": "Ideas & Someday/Maybe",
       "version": "0.3.0",
@@ -239,11 +227,15 @@
     {
       "id": "personal-finance",
       "name": "Personal Finance & Double-Entry Accounting",
-      "version": "0.6.2",
-      "description": "Personal Finance Minion with native hledger reports, confirmed transaction intake, account mappings, and source-linked reviews.",
+      "version": "0.5.0",
+      "description": "Read-only hledger dashboards, structured account mappings, double-entry bookkeeping, statement intake, and financial reviews.",
       "path": "features/personal-finance",
       "domains": [
-        "minions/personal-finance"
+        "finance",
+        "finance/intake",
+        "finance/accounts",
+        "finance/portfolios",
+        "finance/reviews"
       ],
       "skills": [
         "personal-finance"
@@ -253,6 +245,7 @@
           "inbox",
           "sources"
         ],
+        "features": [],
         "tools": [
           "hledger"
         ]
@@ -261,11 +254,16 @@
     {
       "id": "personal-health",
       "name": "Personal & Family Health Records",
-      "version": "0.4.1",
-      "description": "Personal Health Minion with family profiles, structured encounters, conditions, treatments, measurements, and source-linked records.",
+      "version": "0.3.0",
+      "description": "Family medical history, health profiles, encounters, conditions, treatments, and source-linked clinician reviews.",
       "path": "features/personal-health",
       "domains": [
-        "minions/personal-health"
+        "health",
+        "health/profiles",
+        "health/history",
+        "health/conditions",
+        "health/treatments",
+        "health/reviews"
       ],
       "skills": [
         "personal-health"
@@ -275,7 +273,8 @@
           "inbox",
           "sources",
           "archive"
-        ]
+        ],
+        "features": []
       }
     },
     {
@@ -338,7 +337,7 @@
     {
       "id": "calendar",
       "name": "calendar",
-      "version": "0.2.0",
+      "version": "0.1.0",
       "description": "Manage calendar events, agendas, reminders, and recurring schedules by authoring Remind entries directly with the LLM.",
       "path": "skills/calendar",
       "requires": {}

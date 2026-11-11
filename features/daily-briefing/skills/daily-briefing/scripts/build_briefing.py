@@ -27,7 +27,6 @@ for SYSTEM_SCRIPTS in SYSTEM_SCRIPTS_CANDIDATES:
         break
 
 from workspace_registry import briefing_sources, load_registry
-from minion_views import collect_minion_views
 
 
 MAX_SOURCE_READ = 16 * 1024
@@ -613,9 +612,6 @@ def collect_sources(
     else:
         git_block.append("- No local Git history available; use source mtimes and dates as context.")
     blocks.extend((block, False) for block in git_block)
-
-    minion_blocks = collect_minion_views(workspace, briefing_date, lookahead_days, max_per_section, max(0, max_docs - selected_count))
-    blocks.extend((block, False) for block in minion_blocks)
 
     body_blocks: list[tuple[str, bool]] = []
     candidates_in_packet = 0

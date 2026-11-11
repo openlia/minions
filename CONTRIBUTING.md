@@ -1,17 +1,14 @@
 # Contributing to `openlia/minions`
 
 The runtime in `openlia/openlia` supplies reusable capabilities. This repository
-assembles them into profiles, features, Minions, document views, and skills. Keep those
+assembles them into profiles, features, document views, and skills. Keep those
 responsibilities separate, but deliver dependent changes together.
 
-## Documents, skills, and Minions
+## Documents and skills
 
 Profiles select a starter experience. Features bundle domain records, schemas,
 skills, and dependencies. Skills teach Hermes workflows. Inline OpenUI presents
-information in Markdown; Minions add executable input, configuration, and
-dashboard behavior. Do not convert a document collection into an app merely to
-provide a view. See [the Minions guide](docs/minions.md) for migration boundaries
-and the runtime work required before publishing catalog Minions.
+information in Markdown.
 
 The catalog registry helper in `scripts/workspace_registry.py` is also distributed
 inside workflow skills so they work independently after installation. Keep those
@@ -176,12 +173,9 @@ python3 -m unittest discover -s scripts -p 'test_*.py'
 python3 scripts/validate_catalog.py --no-self-test
 ```
 
-The unit suite also runs the packaged Python Minion tests in isolated temporary
-workspaces. Install native `hledger` to exercise Finance accounting tests (CI
-installs it explicitly). Each app's tests can also run from its directory with
-`python3 -B -m unittest discover -s tests` without writing bytecode into packages.
-The paired runtime runner now exercises actual Finance/Health installation and
-structured input; it also requires hledger and the Python packages above.
+The unit suite validates templates, schemas, and distributed registry helpers.
+Install native `hledger` to exercise Finance accounting tests (CI installs it
+explicitly).
 
 Regenerate `catalog.json` deliberately with
 `python3 scripts/validate_catalog.py --write-catalog --no-self-test` when changing

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:openlia:workspace-template:event-note",
+  "title": "Event note template frontmatter schema",
+  "type": "object",
+  "properties": {
+    "starts_at": {"type": ["string", "null"], "format": "date-time"},
+    "location": {"type": ["string", "null"], "minLength": 1},
+    "video_link": {"type": ["string", "null"], "format": "uri"},
+    "attendees": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    }
+  },
+  "required": ["starts_at", "location", "video_link", "attendees"],
+  "additionalProperties": false
+}

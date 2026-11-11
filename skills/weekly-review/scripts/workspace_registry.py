@@ -305,27 +305,6 @@ def _human_label(rel_path: str) -> str:
 
 
 IGNORED_COLLECTION_DIRS = {"node_modules", "__pycache__", ".venv", ".pytest_cache"}
-MINION_ID_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]*$")
-
-
-def _minion_metadata(folder: Path) -> dict[str, Any]:
-    """Read display metadata only; discovery must never execute app code."""
-    metadata: dict[str, Any] = {"minion": True}
-    readme = folder / "README.md"
-    if readme.is_symlink() or not readme.is_file():
-        return metadata
-    try:
-        text = readme.read_text(encoding="utf-8").replace("\r\n", "\n")
-        if text.startswith("---\n") and "\n---\n" in text[4:]:
-            frontmatter = yaml.load(text[4:].split("\n---\n", 1)[0], Loader=UniqueKeySafeLoader)
-            if isinstance(frontmatter, dict):
-                for source, target in (("name", "label"), ("description", "purpose")):
-                    value = frontmatter.get(source)
-                    if isinstance(value, str) and value.strip():
-                        metadata[target] = value.strip()
-    except (OSError, UnicodeError, yaml.YAMLError, ValueError):
-        pass
-    return metadata
 
 
 def discover_domains(workspace: str | Path) -> list[dict[str, Any]]:
@@ -347,11 +326,6 @@ def discover_domains(workspace: str | Path) -> list[dict[str, Any]]:
                 continue
             if entry.name in IGNORED_COLLECTION_DIRS:
                 continue
-            if entry.name == "minions":
-                for app in sorted(entry.iterdir()):
-                    if app.is_dir() and not app.is_symlink() and MINION_ID_PATTERN.fullmatch(app.name):
-                        discovered_paths.add(f"minions/{app.name}")
-                continue
             discovered_paths.add(entry.name)
     except OSError:
         pass
@@ -363,7 +337,6 @@ def discover_domains(workspace: str | Path) -> list[dict[str, Any]]:
             name for name in directories
             if not name.startswith(".") and name not in IGNORED_COLLECTION_DIRS
             and not (folder / name).is_symlink()
-            and not (folder == root and name == "minions")
         )
         rel_parent = folder.relative_to(root).as_posix()
         if rel_parent == ".":
@@ -448,10 +421,6 @@ def discover_domains(workspace: str | Path) -> list[dict[str, Any]]:
             "purpose": purpose,
             "include_in_briefing": include_in_briefing,
         }
-        if rel_path.startswith("minions/"):
-            entry_dict.update(_minion_metadata(folder))
-            entry_dict["include_in_briefing"] = False
-            briefing_category = None
         if briefing_category:
             entry_dict["briefing_category"] = briefing_category
         if route:

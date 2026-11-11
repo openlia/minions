@@ -55,13 +55,6 @@ closed or cancelled work, active goals, open loops, research follow-ups,
 decisions to revisit, claims to review, health records to review, and next-week
 outcomes with first actions.
 
-Minions are apps, not generic record collections. Include intentional,
-source-linked Markdown exports or named runtime views (`minion_describe` and
-`minion_query`) when relevant, not app code,
-tests, dependencies, or cached data. Preserve one authoritative record per fact;
-do not count an export and its source twice. Missing exports mean unavailable
-evidence, not zero activity. Never execute a Minion during a read-only review.
-
 ## Pitfalls
 
 - Do not equate activity with progress or add tasks to fill space.
