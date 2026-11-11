@@ -6,6 +6,8 @@ platforms: [macos, linux]
 required_environment_variables: []
 required_credential_files:
   - google-docs/service-account.json
+workspace_domains:
+  - google-docs
 requires:
   python: requirements.txt
 metadata:

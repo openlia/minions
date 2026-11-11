@@ -1,0 +1,29 @@
+schema: 1
+id: google-docs
+name: Google Docs Integration
+version: 0.1.0
+description: Read, append, and update Google Docs files shared with the service account.
+author: OpenLia maintainers
+license: MIT
+requires:
+  features: []
+domains:
+  - path: google-docs
+    kind: extension
+    label: Google Docs
+    purpose: Service account credentials and integration configuration for Google Docs.
+    lifecycle: active -> archived
+    tags:
+      - google-docs
+      - integration
+    skills:
+      - google-docs
+    feature: google-docs
+skills:
+  - id: google-docs
+    path: skills/google-docs
+    workspace_domains:
+      - google-docs
+policy:
+  allowed_domains:
+    - google-docs
