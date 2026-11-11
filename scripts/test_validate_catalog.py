@@ -11,8 +11,6 @@ import jsonschema
 from validate_catalog import (
     FEATURE_SCHEMA_PATH,
     load_yaml,
-    portable_minion_file,
-    validate_feature_minions,
     validate_runtime_requirement,
 )
 
@@ -72,88 +70,6 @@ class RuntimeRequirementTests(unittest.TestCase):
         errors = []
         validate_runtime_requirement(data, "test", errors)
         self.assertEqual(errors, [])
-
-    def test_minion_package_contract_in_catalog_validator(self):
-        for allowed in (
-            "README.md",
-            "main.py",
-            "dashboard.openui",
-            "scripts/helper.py",
-            "tests/test_main.py",
-            "tests/fixtures/sample.json",
-        ):
-            self.assertTrue(portable_minion_file(allowed), allowed)
-        for rejected in (
-            "",
-            "/main.py",
-            "../main.py",
-            "config.json",
-            "data/items.json",
-            "node_modules/pkg/index.js",
-            ".venv/bin/python",
-            "secrets.json",
-        ):
-            self.assertFalse(portable_minion_file(rejected), rejected)
-
-        with tempfile.TemporaryDirectory() as tmp:
-            fdir = Path(tmp) / "gym-tracker"
-            app = fdir / "workspace" / "minions" / "gym-tracker"
-            app.mkdir(parents=True)
-            files = {
-                "README.md": "---\nname: Gym Tracker\n---\n# Gym Tracker\n",
-                "dashboard.openui": 'Callout(variant: "info", title: "Gym", description: "Ready")',
-                "input.openui": 'Form(name: "minionInput", fields: [], buttons: Buttons(buttons: []))',
-                "input.schema.json": '{"type": "object"}',
-                "config.schema.json": json.dumps(
-                    {
-                        "$schema": "https://json-schema.org/draft/2020-12/schema",
-                        "type": "object",
-                        "required": ["trigger"],
-                        "properties": {
-                            "trigger": {"type": "object"},
-                            "weekly_target_sessions": {"type": "integer", "default": 3},
-                        },
-                    }
-                ),
-                "input.py": "# input\n",
-                "main.py": "# main\n",
-                "requirements.txt": "# deps\n",
-                "tests/test_main.py": "# test\n",
-            }
-            for rel, content in files.items():
-                target = app / rel
-                target.parent.mkdir(parents=True, exist_ok=True)
-                target.write_text(content, encoding="utf-8")
-            (app / "minion.package.json").write_text(
-                json.dumps({"schema": 1, "files": list(files.keys())}, indent=2) + "\n",
-                encoding="utf-8",
-            )
-            manifest = {
-                "domains": [
-                    {
-                        "path": "minions/gym-tracker",
-                        "kind": "extension",
-                        "label": "Gym Tracker",
-                        "purpose": "Track workouts",
-                        "lifecycle": "active",
-                    }
-                ]
-            }
-            errors: list[str] = []
-            validate_feature_minions(fdir, manifest, errors)
-            self.assertEqual(errors, [])
-
-            # Undeclared file or local config must fail strict catalog validation
-            (app / "config.json").write_text('{"trigger": {"on_new_entry": false}}\n', encoding="utf-8")
-            errors = []
-            validate_feature_minions(fdir, manifest, errors)
-            self.assertTrue(any("config.json" in err for err in errors), errors)
-            (app / "config.json").unlink()
-
-            # Missing domain declaration must fail
-            errors = []
-            validate_feature_minions(fdir, {"domains": []}, errors)
-            self.assertTrue(any("exact domain" in err for err in errors), errors)
 
 
 if __name__ == "__main__":

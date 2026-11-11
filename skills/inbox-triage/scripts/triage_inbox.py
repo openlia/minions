@@ -51,7 +51,7 @@ ROUTE_DETAILS = {
         "next_step": "Write one specific candidate claim with a stable source and evidence.",
     },
     "finance": {
-        "destination": "minions/personal-finance/data/intake/",
+        "destination": "finance/intake/",
         "next_step": "Identify the source, covered dates, accounts, proposed postings, and reconciliation status.",
     },
     "archive": {
@@ -146,9 +146,6 @@ def triage(
             if route == "finance" and not route_tags:
                 route_tags = ["finance", "intake"]
             destination = resolve_route_destination(registry, route, route_tags)
-            if route == "finance" and destination is None and any(domain.get("path") == "minions/personal-finance"
-                                          for domain in registry.get("domains", [])):
-                destination = "minions/personal-finance/data/intake/"
             if destination is None and route != "review":
                 reason = f"route '{route}' has no registered destination; manual review is required"
                 route = "review"
@@ -227,7 +224,7 @@ def self_test() -> None:
     assert output["counts"]["task"] == 2
     assert output["items"][3]["confidence"] == "high"
     assert output["items"][3]["approval_state"] == "pending"
-    assert output["items"][4]["destination"] == "minions/personal-finance/data/intake/"
+    assert output["items"][4]["destination"] == "finance/intake/"
     assert output["items"][4]["approval_state"] == "pending"
     assert output["items"][6]["destination"] == "calendar/"
     assert output["items"][7]["destination"] == "knowledge/claims/"

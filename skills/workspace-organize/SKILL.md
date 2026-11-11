@@ -29,11 +29,6 @@ metadata:
 Read relevant sources across the workspace:
 - `AGENTS.md` and domain starter templates.
 - Discovered collection paths and their local templates/schemas.
-- Minion README metadata for app inventory only. Do not treat app scripts, tests,
-  dependencies, configuration, or cached data as ordinary domain records. Use
-  `minion_validate` for a requested app audit; never execute an app merely to
-  organize records. Read intentional Markdown reports outside `minions/` when
-  relevant, without counting their canonical sources twice.
 - Prior organizing reports (e.g. in `inbox/workspace-organize-*.md` or `archive/`) to avoid re-proposing resolved or rejected suggestions.
 - Recent Git history (`git log -n 20 --stat`) to see recently modified or added files.
 

@@ -25,11 +25,6 @@ metadata:
 
 ## Operating Model
 
-- Minions under `minions/<slug>/` are apps, not ordinary filing destinations.
-  Do not route arbitrary captures into app code, config, tests, or cached data.
-  For an explicitly requested app entry, load `minion-authoring`, inspect its
-  input schema, and use the validated input workflow. Otherwise preserve the
-  capture in `inbox/` or file it into the authoritative domain collection.
 - **Separation Principle**: The Ingestion Vault (`OPENLIA_INGESTION_ROOT`) stores evidence (retained originals, OCR/transcripts, and structured `custom_fields`) outside `/opt/data/workspace`; `inbox/` holds items requiring active human attention (unresolved notes, questions, and decisions).
 - Document uploads live in the Ingestion Vault and are referenced via `openlia://source/{source_id}` (or `src_...`). Use [Document Intelligence](openlia://skills/document-intelligence) for single-turn capture (`wait_seconds=15, auto_unlock=True`), smart password profile matching, and page-level inspection (`page_outline`). Document uploads do NOT create files in `workspace/` or routine intake notes in `inbox/`. The document inbox is a virtual view (`review.status == 'needs-review'` or `'unreviewed'`) queried via `ingestion_search(review_status="needs-review")`.
 - Standalone captures and substantive review notes stay in `inbox/` (e.g. `inbox/YYYY-MM-DD-review.md`) and cite evidence using canonical URIs: `[Title](openlia://source/{source_id}#{version_id}/p{page})`.
@@ -43,7 +38,7 @@ metadata:
   - `decision` -> `decisions/`
   - `idea` -> `ideas/`
   - `research` -> `knowledge/research/`
-  - `finance` -> `minions/personal-finance/data/intake/` when the app is installed.
+  - `finance` -> `finance/intake/`
   - `claim` -> `knowledge/claims/`
   - `archive` -> `archive/`
   - `review` -> remain in `inbox/` pending clarification

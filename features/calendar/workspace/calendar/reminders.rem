@@ -1,0 +1,17 @@
+# OpenLia Workspace Calendar
+# Powered by Remind (https://manpages.debian.org/testing/remind/remind.1.en.html)
+#
+# Syntax:
+#   REM <date_spec> [*N] [FROM <date>] [UNTIL <date> | THROUGH <date>] [AT <time>] \
+#       [DURATION <duration>] [TAG <tags>] [INFO "<Header>: <Value>"]... MSG <Summary>
+#   Common date specs include weekdays, multiple weekdays, monthly day numbers,
+#   annual month/day pairs, and bounded date ranges. Native Remind remains the
+#   source of truth; the workspace preview reports unsupported advanced clauses.
+#
+# Supported INFO Headers:
+#   INFO "Attendees: Name <email>, [[Person]]"
+#   INFO "Location: Physical address, office room, or venue"
+#   INFO "Map-Url: https://maps.google.com/?q=..."
+#   INFO "Video-Link: https://meet.google.com/... or https://zoom.us/..."
+#   INFO "Description: Meeting details and agenda"
+#   INFO "Event-Note: calendar/YYYY-MM-DD-event-note.md"

@@ -27,7 +27,6 @@ user-owned delegation policy authorizes the scoped update.
 - New top-level and nested folders are normal workspace content. For a recurring
   use case needing reusable organization or a document view, design the
   smallest useful folder, template, optional schema, and inline `openui` blocks.
-  Use a Minion for an interactive programmable app, not merely to display notes.
 
 ## File handling
 
@@ -38,7 +37,7 @@ user-owned delegation policy authorizes the scoped update.
   - **Base Starter Templates**:
     - `goals/goal-template.md`: high-level outcomes, rationale, and linked tasks.
     - `tasks/task-template.md`: concrete physical actions with priorities and context tags.
-    - `minions/calendar/templates/event-note-template.md`: event agendas, notes, and follow-up items owned by the Calendar Minion.
+    - `calendar/event-note-template.md`: event agendas, notes, and follow-up items.
     - `knowledge/claims/claim-template.md`: starter format for durable
       personal claims; create actual records in the same directory.
     - `inbox/daily-briefing/briefing-template.md`: dated morning briefing reports.
@@ -53,8 +52,8 @@ user-owned delegation policy authorizes the scoped update.
     - `ideas/idea-template.md`: seeds, opportunities, and exploration questions (`ideas` feature).
     - `travel/trip-template.md`: itineraries, reservations, and packing lists (`travel` feature).
     - `shopping/item-template.md`: product research, price targets, and evaluations (`shopping` feature).
-    - `minions/personal-finance/templates/`: finance record contracts; authoritative journals and records live in `minions/personal-finance/data/` (`personal-finance` app and skill).
-    - `minions/personal-health/templates/`: health record contracts; person-scoped clinical records live in `minions/personal-health/data/` (`personal-health` app and skill).
+    - `finance/finance-template.md`: personal finance and double-entry accounting records (`personal-finance` feature).
+    - `health/profiles/profile-template.md`: health profiles and medical records (`personal-health` feature).
 - Prefer Markdown and small structured files with stable, descriptive names.
 - Distinguish semantic domain records from supporting artifacts. Use a suitable
   local template for recurring artifacts rather than forcing a daily menu or
@@ -72,17 +71,6 @@ user-owned delegation policy authorizes the scoped update.
   `inline-openui-authoring`, discover exact APIs with `openui_describe`, and
   validate with `openui_validate`. Preserve conclusions and source links outside
   views. Literal tables are snapshots, not live queries; do not invent counts.
-- **Minions (`minions/<slug>/`)**: For a programmable tracker or app, load
-  `minion-authoring` and use `minion_scaffold`, `minion_validate`, and `minion_run`.
-  The skill defines the canonical README, dashboard/input OpenUI, input/config
-  schemas, local config, entrypoints, data, and tests. Keep one authoritative
-  location per dataset and preserve existing domain records. Local execution
-  does not authorize external effects; verify schedule registration separately
-  from a cron setting. Do not feed app internals or cached copies into generic
-  reviews. Query named `data.views.json` views through the runtime's
-  `minion_describe` / `minion_query` tools. Scheduled briefing participation is
-  opt-in via local `data_views.briefing`; person scopes are explicit and cannot
-  be widened by a query. Unavailable views do not mean zero activity.
 - Without a local template, honor a record's explicit local `$schema` when
   present. A record directive cannot override a local template's contract.
 - Authorization and validation are separate: report invalid content accurately,
@@ -125,7 +113,6 @@ user-owned delegation policy authorizes the scoped update.
 When referencing or providing links to workspace documents, notes, or skills in user-facing responses or workspace records:
 - Format links using canonical `openlia://` URIs:
   - Workspace documents: `[Label](openlia://workspace/<path>)` (e.g. `[Career Goal](openlia://workspace/goals/career.md)`).
-  - Minions: `[Label](openlia://minions/<slug>)` (e.g. `[Gym Tracker](openlia://minions/gym-tracker)`).
   - Skills: `[Label](openlia://skills/<skill-id>)` (e.g. `[Inbox Triage](openlia://skills/inbox-triage)`).
   - Inside workspace markdown files, document-relative links (e.g. `[Specs](./specs.md)`) are also supported.
 - Never embed environment-specific HTTP origins or hostnames into workspace records.

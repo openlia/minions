@@ -1,8 +1,8 @@
 schema: 1
 id: calendar
 name: Calendar & Remind Scheduling
-version: 0.4.1
-description: Calendar Minion with native Remind appointments, confirmed local entry, month/week/timeline views, and companion event notes.
+version: 0.3.0
+description: Remind-backed appointments with OpenUI month, week, and event-duration timeline views, plus companion event notes.
 author: OpenLia maintainers
 license: MIT
 requires:
@@ -12,17 +12,19 @@ requires:
   tools:
     - remind
 domains:
-  - path: minions/calendar
+  - path: calendar
     kind: extension
     label: Calendar
-    purpose: Native Remind schedule entries and companion event notes owned by the Calendar Minion.
+    purpose: Remind schedule entries (reminders.rem) and companion event notes.
     lifecycle: scheduled -> completed -> archived
     route: event
     tags:
       - calendar
       - event
       - remind
-    include_in_briefing: false
+    template: calendar/event-note-template.md
+    include_in_briefing: true
+    briefing_category: calendar
     skills:
       - calendar
     feature: calendar
@@ -30,10 +32,10 @@ skills:
   - id: calendar
     path: skills/calendar
     workspace_domains:
-      - minions/calendar
+      - calendar
 policy:
   allowed_domains:
-    - minions/calendar/data
+    - calendar
   allowed_actions:
     - create_records
     - update_records

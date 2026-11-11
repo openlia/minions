@@ -1,9 +1,0 @@
-{
-  "schema": 1,
-  "views": [{
-    "id": "reviews", "label": "Finance review dates", "reader": "markdown",
-    "path": "data/reviews",
-    "fields": ["title", "next_review_date", "status"],
-    "title_field": "title", "date_field": "next_review_date", "max_records": 20
-  }]
-}

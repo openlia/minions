@@ -1,12 +1,17 @@
 ---
 name: personal-health
 description: Maintain structured family medical history, conditions, treatments, and clinician-ready summaries.
-version: 0.4.0
+version: 0.1.0
 platforms: [macos, linux]
 required_environment_variables: []
 required_credential_files: []
 workspace_domains:
-  - minions/personal-health
+  - health
+  - health/profiles
+  - health/history
+  - health/conditions
+  - health/treatments
+  - health/reviews
 metadata:
   hermes:
     tags: [personal-os, health, medical-history, family]
@@ -14,15 +19,6 @@ metadata:
 ---
 
 # Personal Health
-
-## Canonical app data
-
-Open [Personal Health](openlia://minions/personal-health). The authoritative
-root is `minions/personal-health/data/`. Contracts live under
-`minions/personal-health/templates/`. Write an explicit relative `$schema` in
-each record. Measurements use history records with structured `results`,
-preserving values, units, sources, and date precision.
-Run the app's `audit_health.py --workspace-root WORKSPACE --json` after changes.
 
 ## When to Use
 
@@ -41,24 +37,24 @@ person's record.
 Read `workspace.yaml`, `assistant-policy.yaml`, and the relevant health template
 and schema before writing. The registered health paths are:
 
-- `minions/personal-health/data/profiles/`: one stable identity record per tracked individual.
-- `minions/personal-health/data/history/`: significant symptoms, encounters, tests, procedures,
+- `health/profiles/`: one stable identity record per tracked individual.
+- `health/history/`: significant symptoms, encounters, tests, procedures,
   immunizations, hospitalizations, and allergy reactions.
-- `minions/personal-health/data/conditions/`: diagnoses, allergies, intolerances, risks, and family
+- `health/conditions/`: diagnoses, allergies, intolerances, risks, and family
   history with separate verification and clinical status.
-- `minions/personal-health/data/treatments/`: medication and other care courses, without individual
+- `health/treatments/`: medication and other care courses, without individual
   dose-adherence logging.
-- `minions/personal-health/data/reviews/`: dated, source-linked medical summaries and clinician
+- `health/reviews/`: dated, source-linked medical summaries and clinician
   handoff reports.
 
 Use person-scoped directories for records:
 
 ```text
-minions/personal-health/data/profiles/person-001.md
-minions/personal-health/data/history/person-001/<record>.md
-minions/personal-health/data/conditions/person-001/<record>.md
-minions/personal-health/data/treatments/person-001/<record>.md
-minions/personal-health/data/reviews/person-001/<record>.md
+health/profiles/person-001.md
+health/history/person-001/<record>.md
+health/conditions/person-001/<record>.md
+health/treatments/person-001/<record>.md
+health/reviews/person-001/<record>.md
 ```
 
 Every health record must also contain `person_id`. The directory and metadata
@@ -93,7 +89,7 @@ Keep these distinctions explicit:
 - Unknown information remains unknown. Do not convert missing allergies,
   medication history, or test results into a negative claim.
 - Preserve source type and stable source references (`openlia://source/{source_id}#{version_id}`). Raw medical documents and exports belong in the Ingestion Vault (`OPENLIA_INGESTION_ROOT`), not in the tracked workspace.
-- Preserve corrections with `amended`, `entered-in-error`, superseding records, or explicit notes rather than silently replacing history. When a lab report or clinical document in the Ingestion Vault is replaced with a new version (`ver_002`), inspect the diff and update or supersede the corresponding `minions/personal-health/data/history/` or `minions/personal-health/data/conditions/` record with `amended` status and the new `#ver_002` citation. If an erroneously uploaded medical document is deleted from the Vault (`(deleted source: src_...)`), mark any clinical record derived solely from that upload as `entered-in-error` rather than leaving unverified clinical claims active.
+- Preserve corrections with `amended`, `entered-in-error`, superseding records, or explicit notes rather than silently replacing history. When a lab report or clinical document in the Ingestion Vault is replaced with a new version (`ver_002`), inspect the diff and update or supersede the corresponding `health/history/` or `health/conditions/` record with `amended` status and the new `#ver_002` citation. If an erroneously uploaded medical document is deleted from the Vault (`(deleted source: src_...)`), mark any clinical record derived solely from that upload as `entered-in-error` rather than leaving unverified clinical claims active.
 
 
 Do not diagnose, choose treatment, interpret a result beyond the supplied

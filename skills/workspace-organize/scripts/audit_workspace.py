@@ -62,7 +62,6 @@ def _record_walk(workspace: Path, start: Path | None = None):
             if not name.startswith(".")
             and name not in {"node_modules", "__pycache__", ".venv", ".pytest_cache"}
             and not (current / name).is_symlink()
-            and not (current == workspace and name == "minions")
         )
         yield root, directories, [name for name in files if not (current / name).is_symlink()]
 

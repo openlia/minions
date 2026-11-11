@@ -1,12 +1,12 @@
 ---
 name: calendar
 description: Manage calendar events, agendas, reminders, and recurring schedules by authoring Remind entries directly with the LLM.
-version: 0.2.0
+version: 0.1.0
 platforms: [macos, linux]
 required_environment_variables: []
 required_credential_files: []
 workspace_domains:
-  - minions/calendar
+  - calendar
 metadata:
   hermes:
     tags: [personal-os, calendar, remind, agenda, scheduling, meetings]
@@ -18,10 +18,6 @@ metadata:
 Calendar entries are authored directly in Remind syntax. Do not use a
 calendar-specific formatter or parser: native Remind is the source of truth
 for syntax, recurrence, includes, and agenda evaluation.
-
-The Calendar Minion provides a confirmed one-off appointment flow. Use this
-skill for recurrence, multi-day scheduling, advanced Remind expressions, and
-agent-side rescheduling or cancellation.
 
 This rule applies to agent-side calendar operations. The workspace UI may parse
 Remind files for visualization, but agent edits must remain native Remind
@@ -37,14 +33,14 @@ syntax.
 
 ## Data Model
 
-Calendar entries are maintained in the Calendar Minion using [Remind](https://manpages.debian.org/testing/remind/remind.1.en.html) syntax.
+Calendar entries are maintained in the workspace using [Remind](https://manpages.debian.org/testing/remind/remind.1.en.html) syntax.
 
-- **Primary Calendar File**: `minions/calendar/data/reminders.rem` in the runtime workspace (e.g. `/opt/data/workspace/minions/calendar/data/reminders.rem`).
-- **Modular Calendars**: Additional `.rem` files (e.g. `minions/calendar/data/holidays.rem`, `minions/calendar/data/work.rem`) can be included via Remind's `INCLUDE` directive:
+- **Primary Calendar File**: `calendar/reminders.rem` in the runtime workspace (e.g. `/opt/data/workspace/calendar/reminders.rem`).
+- **Modular Calendars**: Additional `.rem` files (e.g. `calendar/holidays.rem`, `calendar/work.rem`) can be included via Remind's `INCLUDE` directive:
   ```remind
   INCLUDE holidays.rem
   ```
-- **Companion Event Notes**: Deep meeting agendas, minutes, and follow-up action items can be tracked in Markdown files using `minions/calendar/templates/event-note-template.md` (e.g. `minions/calendar/data/notes/2026-10-15-q4-sync.md`), linked via the `Event-Note:` INFO header.
+- **Companion Event Notes**: Deep meeting agendas, minutes, and follow-up action items can be tracked in Markdown files using `calendar/event-note-template.md` (e.g. `calendar/2026-10-15-q4-sync.md`), linked via the `Event-Note:` INFO header.
 
 ### Remind Syntax & INFO Convention
 
@@ -66,7 +62,7 @@ Standardized INFO headers supported by OpenLia:
 | `Map-Url:` | Google Maps or web link to location (alias: `Map:`) | `https://maps.google.com/?q=123+Market+St` |
 | `Video-Link:` | Video conferencing link: Zoom, Google Meet, Teams (alias: `Call:`) | `https://meet.google.com/abc-defg-hij` |
 | `Description:` | Detailed agenda, topics, or notes | `Quarterly review and roadmap planning` |
-| `Event-Note:` | Companion workspace event note Markdown file (alias: `Note:`) | `minions/calendar/data/notes/2026-10-15-roadmap-review.md` |
+| `Event-Note:` | Companion workspace event note Markdown file (alias: `Note:`) | `calendar/2026-10-15-roadmap-review.md` |
 
 ### Date & Time Specification Reference
 
@@ -87,19 +83,18 @@ Standardized INFO headers supported by OpenLia:
 
 ### 1. Inspect the Existing Calendar
 
-Before writing, read `minions/calendar/data/reminders.rem` and any files named by its
+Before writing, read `calendar/reminders.rem` and any files named by its
 `INCLUDE` directives. Preserve existing comments, source references, Unicode,
 and unrelated entries. Calendar includes are resolved reliably when Remind is
-run from the Minion data directory, so use that directory as the working
+run from the calendar directory, so use that directory as the working
 directory for all checks.
 
 ```sh
-cd /opt/data/workspace/minions/calendar/data
+cd /opt/data/workspace/calendar
 ```
 
-Do not invent a second parser or rewrite a calendar through an
-encoding-normalization command. The Minion and this skill both delegate calendar
-semantics to native Remind.
+There is no calendar-specific helper script. Do not invent a second parser or
+rewrite a calendar through an encoding-normalization command.
 
 ### 2. View Agenda & Lookaheads (Read-Only)
 
@@ -141,7 +136,7 @@ REM 2026-10-15 AT 10:00 DURATION 1:00 TAG meeting TAG client \
     INFO "Map-Url: https://maps.google.com/?q=123+Market+St" \
     INFO "Attendees: Alice <alice@example.com>, openlia://workspace/people/bob.md" \
     INFO "Description: Quarterly client sync and roadmap review" \
-    INFO "Event-Note: openlia://workspace/minions/calendar/data/notes/2026-10-15-client-review.md" \
+    INFO "Event-Note: openlia://workspace/calendar/2026-10-15-client-review.md" \
     MSG Client Roadmap Review
 
 # Multi-day holiday or date range (inclusive dates):
@@ -196,5 +191,5 @@ check or a zero exit code.
 
 ### 6. Safety & Policy Rules
 
-- **Workspace File Mutations**: Adding or updating events in `minions/calendar/data/reminders.rem` is a local workspace change. Always verify the proposed change with the user before committing destructive edits or deleting existing entries.
+- **Workspace File Mutations**: Adding or updating events in `calendar/reminders.rem` is a local workspace change. Always verify the proposed change with the user before committing destructive edits or deleting existing entries.
 - **External Calendars**: Local `reminders.rem` management does NOT authorize modifying external calendar services (Google Calendar, Microsoft Outlook, CalDAV). Modifying external calendar integrations requires explicit authorization under `modify_external_calendar` policy.

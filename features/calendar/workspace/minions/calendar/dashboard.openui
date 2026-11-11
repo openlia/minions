@@ -1,9 +1,0 @@
-Stack(children: [
-  Callout(variant: "info", title: "Calendar", description: "Native Remind is the source of truth. New appointments require explicit SAVE confirmation; external notifications and invitations are off."),
-  Calendar(children: [views], source: "data/reminders.rem")
-])
-views = Tabs([
-  TabItem("month", "Month", [CalendarMonth()]),
-  TabItem("week", "Week", [CalendarWeek()]),
-  TabItem("timeline", "Timeline", [GanttChart()])
-])

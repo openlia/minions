@@ -1,25 +1,93 @@
 schema: 1
 id: personal-finance
 name: Personal Finance & Double-Entry Accounting
-version: 0.6.2
-description: Personal Finance Minion with native hledger reports, confirmed transaction intake, account mappings, and source-linked reviews.
+version: 0.5.0
+description: Read-only hledger dashboards, structured account mappings, double-entry bookkeeping, statement intake, and financial reviews.
 author: OpenLia maintainers
 license: MIT
 requires:
-  core_domains: [inbox, sources]
-  tools: [hledger]
+  core_domains:
+    - inbox
+    - sources
+  features: []
+  tools:
+    - hledger
 domains:
-  - path: minions/personal-finance
+  - path: finance
     kind: extension
-    label: Personal Finance
-    purpose: Interactive hledger reports and confirmed local bookkeeping; canonical records live in this app's data directory.
+    label: Finance
+    purpose: Read-only ledger reports and charts, account mappings, and financial reviews.
     lifecycle: active -> archived
-    skills: [personal-finance]
+    tags:
+      - finance
+    template: finance/finance-template.md
+    skills:
+      - personal-finance
+    feature: personal-finance
+  - path: finance/intake
+    kind: extension
+    label: Finance Intake
+    purpose: Financial source batches awaiting extraction, posting, or reconciliation.
+    lifecycle: received -> posted -> reconciled or archived
+    route: finance
+    tags:
+      - finance
+      - intake
+    template: finance/intake/intake-template.md
+    include_in_briefing: true
+    briefing_category: finance
+    skills:
+      - personal-finance
+    feature: personal-finance
+  - path: finance/accounts
+    kind: extension
+    label: Finance Accounts
+    purpose: Non-secret account mappings and reconciliation configuration.
+    lifecycle: active -> closed -> archived
+    tags:
+      - finance
+      - account
+    template: finance/accounts/accounts-template.md
+    skills:
+      - personal-finance
+    feature: personal-finance
+  - path: finance/portfolios
+    kind: extension
+    label: Finance Portfolios
+    purpose: Investment holdings, valuation scopes, prices, and allocation reviews.
+    lifecycle: active -> closed -> archived
+    tags:
+      - finance
+      - portfolio
+    template: finance/portfolios/portfolios-template.md
+    skills:
+      - personal-finance
+    feature: personal-finance
+  - path: finance/reviews
+    kind: extension
+    label: Finance Reviews
+    purpose: Periodic cash flow, spending, net worth, and portfolio review records.
+    lifecycle: draft -> final -> archived
+    tags:
+      - finance
+      - review
+    template: finance/reviews/reviews-template.md
+    include_in_briefing: true
+    briefing_category: finance
+    skills:
+      - personal-finance
     feature: personal-finance
 skills:
   - id: personal-finance
     path: skills/personal-finance
-    workspace_domains: [minions/personal-finance]
+    workspace_domains:
+      - finance
+      - finance/intake
+      - finance/accounts
+      - finance/portfolios
+      - finance/reviews
 policy:
-  allowed_domains: [minions/personal-finance/data]
-  allowed_actions: [record_financial_data]
+  allowed_domains:
+    - finance
+  allowed_actions:
+    - record_financial_data

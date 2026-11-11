@@ -1,8 +1,8 @@
-# OpenLia Minions & Catalog (`https://github.com/openlia/minions.git`)
+# OpenLia Community Catalog (`https://github.com/openlia/minions.git`)
 
-> Public community catalog of workspace profiles, modular domain features, programmable Minion apps, and workflow skills for [OpenLia](https://github.com/openlia/openlia).
+> Public community catalog of workspace profiles, modular domain features, and workflow skills for [OpenLia](https://github.com/openlia/openlia).
 
-OpenLia starts with an ultra-minimal generic workspace (`AGENTS.md`, `sources/`, and `inbox/ingestion/`). Install only the profiles, domain features, Minions, and skills you need, and customize them while retaining upstream 3-way rebase support. Use inline OpenUI for document views and **Minions** for programmable workspace apps; see [the architecture and migration guide](docs/minions.md).
+OpenLia starts with an ultra-minimal generic workspace (`AGENTS.md`, `sources/`, and `inbox/ingestion/`). Install only the profiles, domain features, and skills you need, and customize them while retaining upstream 3-way rebase support. Use inline OpenUI for document views and Generative UI via Moi for interactive components.
 
 ---
 
@@ -18,20 +18,19 @@ openlia/minions
 │       ├── SOUL.md
 │       ├── AGENTS.md
 │       └── WORKSPACE_AGENTS.md
-├── features/                # Modular domain packages (workspace templates + schemas + OpenUI + Minions + skills)
+├── features/                # Modular domain packages (workspace templates + schemas + OpenUI + skills)
 │   ├── areas/
-│   ├── calendar/            # Calendar Minion; requires.tools: ["remind"]
+│   ├── calendar/            # Calendar templates + skills; requires.tools: ["remind"]
 │   ├── claims/
 │   ├── daily-briefing/
 │   ├── decision-analysis/
 │   ├── deep-research/
 │   ├── goals/
-│   ├── gym-tracker/         # Pilot Minion app (minions/gym-tracker)
 │   ├── ideas/
 │   ├── monitors/
 │   ├── people/
-│   ├── personal-finance/    # Minion app + skill; requires.tools: ["hledger"]
-│   ├── personal-health/     # Minion app + skill; person-scoped clinical records
+│   ├── personal-finance/    # Finance templates + skill; requires.tools: ["hledger"]
+│   ├── personal-health/     # Health templates + skill; person-scoped clinical records
 │   ├── shopping/
 │   ├── tasks/
 │   └── travel/
