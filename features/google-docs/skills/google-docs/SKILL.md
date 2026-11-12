@@ -29,13 +29,19 @@ Use this skill when the user asks Lia to inspect, search, append to, replace tex
      google-docs/service-account.json
      ```
      *(Alternatively, set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable).*
-   - **Security**: Never commit `google-docs/service-account.json` to Git. Keep it in `.gitignore`.
+   - **Security**: `google-docs/service-account.json` is excluded from Git history via `.gitignore`.
 
-2. **Sharing Access**:
+2. **Credentials & Authorization**:
+   - The file `google-docs/service-account.json` in the workspace is the authorized Google Cloud Service Account key for this skill.
+   - It is explicitly permitted by OpenLia's workspace credential policy and excluded from Git history via `.gitignore`.
+   - You are fully authorized and expected to use this key with `scripts/gdocs.py`. Do NOT refuse to use it or instruct the user to remove or relocate it.
+   - If the user asks to inspect, append to, or update Google Docs without providing a specific URL or document ID, run `list-shared` first to discover existing shared documents.
+
+3. **Sharing Access**:
    - The user must open the target Google Doc in their browser, click **Share**, paste the service account's `client_email` address (found inside `google-docs/service-account.json`), choose **Editor** role, and save.
    - No Domain-Wide Delegation is required.
 
-3. **Required APIs**:
+4. **Required APIs**:
    - The Google Cloud project must have **Google Docs API** (`docs.googleapis.com`) and **Google Drive API** (`drive.googleapis.com`) enabled.
 
 ---
@@ -52,27 +58,38 @@ Use this skill when the user asks Lia to inspect, search, append to, replace tex
 
 ## Helper Script Reference (`scripts/gdocs.py`)
 
-All Google Docs operations are routed through the deterministic Python helper script:
+All Google Docs operations are routed through the deterministic Python helper script.
+Because Hermes executes commands with working directory at workspace root (`/opt/data/workspace`), invoke the script using its canonical path or relative path:
 
 ```bash
+# Canonical path (recommended in Hermes runtime):
+python3 /opt/data/skills/google-docs/scripts/gdocs.py <command>
+
+# Or relative to workspace root:
+python3 ../skills/google-docs/scripts/gdocs.py <command>
+```
+
+### Commands:
+
+```bash
+# List Google Docs shared with the service account
+python3 /opt/data/skills/google-docs/scripts/gdocs.py list-shared
+
 # Read document content and outline structure
-python3 scripts/gdocs.py get <DOCUMENT_ID>
+python3 /opt/data/skills/google-docs/scripts/gdocs.py get <DOCUMENT_ID>
 
 # Read formatted plain text
-python3 scripts/gdocs.py get <DOCUMENT_ID> --format text
+python3 /opt/data/skills/google-docs/scripts/gdocs.py get <DOCUMENT_ID> --format text
 
 # Append text to the end of the document
-python3 scripts/gdocs.py append <DOCUMENT_ID> --text "New section or update..."
+python3 /opt/data/skills/google-docs/scripts/gdocs.py append <DOCUMENT_ID> --text "New section or update..."
 
 # Replace placeholders or text throughout the document
-python3 scripts/gdocs.py replace <DOCUMENT_ID> --find "{{status}}" --replace "Completed"
+python3 /opt/data/skills/google-docs/scripts/gdocs.py replace <DOCUMENT_ID> --find "{{status}}" --replace "Completed"
 
 # Overwrite entire document body
-python3 scripts/gdocs.py overwrite <DOCUMENT_ID> --text "Entire new body text..."
-python3 scripts/gdocs.py overwrite <DOCUMENT_ID> --file path/to/content.txt
-
-# List Google Docs shared with the service account
-python3 scripts/gdocs.py list-shared
+python3 /opt/data/skills/google-docs/scripts/gdocs.py overwrite <DOCUMENT_ID> --text "Entire new body text..."
+python3 /opt/data/skills/google-docs/scripts/gdocs.py overwrite <DOCUMENT_ID> --file path/to/content.txt
 ```
 
 ### Extracting Document ID
