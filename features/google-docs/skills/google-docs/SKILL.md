@@ -1,7 +1,7 @@
 ---
 name: google-docs
-description: Read, append, and update Google Docs files shared with the service account.
-version: 0.1.0
+description: Read, append, update, and format Google Docs files and tables shared with the service account.
+version: 0.2.0
 platforms: [macos, linux]
 required_environment_variables: []
 required_credential_files:
@@ -52,6 +52,10 @@ Use this skill when the user asks Lia to inspect, search, append to, replace tex
 - **Human Approval for Overwrite**:
   - `append` and targeted `replace` operations can be performed when explicitly requested by the user.
   - Full document `overwrite` operations must show a summary of what will be replaced and require user confirmation before execution.
+- **Tables & Grids**:
+  - When asked to create, format, draw, or update tables in Google Docs, **ALWAYS use `insert-table`**.
+  - **Do NOT write custom Python scripts** or create ad-hoc loops to insert tables or edit cells.
+  - `insert-table` natively accepts Markdown tables, JSON 2D arrays, or CSV, automatically inserts the table structure, populates all cells in reverse index order, and applies bold formatting to header rows in a single command.
 - **Fail-Closed Permissions**: If the service account lacks Editor permission or the file has not been shared, report the exact service account email address to the user and instruct them to grant access.
 
 ---
@@ -90,6 +94,26 @@ python3 /opt/data/skills/google-docs/scripts/gdocs.py replace <DOCUMENT_ID> --fi
 # Overwrite entire document body
 python3 /opt/data/skills/google-docs/scripts/gdocs.py overwrite <DOCUMENT_ID> --text "Entire new body text..."
 python3 /opt/data/skills/google-docs/scripts/gdocs.py overwrite <DOCUMENT_ID> --file path/to/content.txt
+
+# Insert a structured table (supports Markdown table syntax, JSON 2D array, or CSV)
+python3 /opt/data/skills/google-docs/scripts/gdocs.py insert-table <DOCUMENT_ID> \
+    --data '| Thứ | Trưa | Tối |\n|---|---|---|\n| T2 | Bún bò | Cơm gà |' \
+    --header-rows 1
+
+# Insert table from file with preceding heading and bold header rows
+python3 /opt/data/skills/google-docs/scripts/gdocs.py insert-table <DOCUMENT_ID> \
+    --file path/to/menu_week1.md \
+    --title "THỰC ĐƠN TUẦN 1" \
+    --heading-style HEADING_2 \
+    --header-rows 1
+
+# Clear document and write a new table with heading in one atomic command
+python3 /opt/data/skills/google-docs/scripts/gdocs.py insert-table <DOCUMENT_ID> \
+    --data '[["T2", "T3"], ["Cơm", "Cháo"]]' \
+    --title "LỊCH TRỰC TUẦN" \
+    --overwrite \
+    --header-rows 1 \
+    --header-bg
 ```
 
 ### Extracting Document ID
