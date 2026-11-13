@@ -1,8 +1,8 @@
 schema: 1
 id: google-docs
 name: Google Docs Integration
-version: 0.1.0
-description: Read, append, and update Google Docs files shared with the service account.
+version: 0.2.0
+description: Read, append, update, and format Google Docs files and tables shared with the service account.
 author: OpenLia maintainers
 license: MIT
 requires:
